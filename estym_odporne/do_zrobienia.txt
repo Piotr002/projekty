@@ -1,0 +1,6 @@
+1. Zrobienie porównania dla innego szeregu czasowego
+2. Napisanie jeszcze kilku estymatorów
+3. Dodanie szumu dodatkowego ciągłego
+4. Zmiana szumu szeregu na t-studenta z 4 i 20 stopniami swobody
+5. GUI
+6. Napisać co już mamy

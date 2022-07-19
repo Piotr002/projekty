@@ -1,0 +1,1 @@
+Główny plik (do uruchomienia gry) to "gra.py".

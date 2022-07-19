@@ -1,0 +1,27 @@
+\documentclass[12pt]{mwart}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{marvosym}
+\usepackage{mathtools, amsthm, amssymb}
+\mathtoolsset{showonlyrefs, mathic}
+\usepackage[plmath]{polski}
+\begin{document}
+	\begin{enumerate}
+		\item 10 estymatorów odpornych plus 1 klasyczny
+		\item Porównanie estymatorów odpornych z teoretycznymi odpowiednikami:
+		\begin{enumerate}
+			\item Szereg \(\text{MA(1)}\quad(Z_t\sim\mathcal{N}(0, 1))\)
+			\item Szereg \(\text{MA(1)}\quad(Z_t\sim\mathcal{T}(4))\)
+			\item Szereg \(\text{MA(1)}\quad(Z_t\sim\mathcal{T}(20))\)
+			\item Szereg \(\text{ARMA}(4, 4)\)
+		\end{enumerate}
+		dla wszystkich powyższych szeregów rozważone przypadki dla długości szeregów \(n\in\{100, 500, 1000\}\) i dodanym sztucznie szumem:
+		\begin{enumerate}
+			\item Dyskretnym \pauza \(P(X=a)=p(X=-a)=p,\quad a\in\{3, 10, 20, 30, 40, 50\},\quad\\p\in\{0.01, 0.02, 0.03, 0.04, 0.05, 0.06\}\)
+			\item Ciągłym \pauza \(\mathcal{N}(\mu=0, \sigma=0.75)\)
+		\end{enumerate}
+		dla każdego modelu wyznaczona średnia funkcja autokorelacji na podstawie 100 powtórzeń Monte{\dywiz}Carlo i porównana z teoretycznymi odpowiednikami \pauza dla szeregu MA(1), z rozkładem normalnym, wyznaczonym analitycznie, a w pozostałych przypadkach wyznaczone empirycznie, dla szeregów bez szumu, uśrednione funkcje autokorelacji, na podstawie symulacji Monte-Carlo, dla $10^5$ powtórzeń
+		\item Wstępnie GUI
+	\end{enumerate}
+\end{document}

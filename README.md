@@ -1,0 +1,1 @@
+Każdy folder zawiera plik "readme.txt" w którym krótko opisałem zrealizowany projekt.

@@ -1,0 +1,15 @@
+base
+vcd
+gnm
+vcdExtra
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+matrixStats
+binom

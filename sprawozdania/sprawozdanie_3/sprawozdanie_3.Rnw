@@ -1,0 +1,1056 @@
+\documentclass[12pt]{mwart}
+\usepackage[left=1.8cm, right=1.8cm, top=1.8cm, bottom=1.8cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{mathtools, amsthm, amssymb, amsmath}
+\usepackage[plmath]{polski}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{rotating}
+\DeclareMathOperator{\E}{\text{E}}
+\DeclareMathOperator{\Var}{\text{Var}}
+\date{\today}
+\title{Sprawozdanie 3}
+\author{Piotr Zieleń}
+<<echo=F>>=
+pdf.options(encoding="CP1250")
+@
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+	\section{Wstęp}
+	Celem sprawozdania jest przedstawienie rozwiązań oraz wniosków z rozwiązywanych podczas zajęć labolatoryjnych kolejnych list zadań.
+	\section{Lista 10}
+	\subsection{Zadanie 1.}\label{section:zadanie1_lista10}
+	Celem zadania jest zweryfikowanie hipotezy, na podstawie danej tabeli dwudzielczej \pauza tabela (\ref{tab:tabela1}), że studenci byli tak samo przygotowani do obu kolokwiów. Hipotezę należało zweryfikować na poziomie istotności $\alpha=0.05$.
+	
+	Dane do zadania:
+	\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{cccc}
+				\hline
+				& \multicolumn{2}{c}{Wynik z kolokwium 1} & \\\cline{2-3}
+				Wynik z kolokwium 2 & Negatywny & Pozytywny & Suma \\\hline
+				Negatywny & 32 & 44 & 76 \\
+				Pozytywny & 22 & 38 & 60 \\\hline
+				Suma & 54 & 82 & 136 \\\hline
+			\end{tabular}
+		\end{center}
+		\caption{Dane do zadania 1.}
+		\label{tab:tabela1}
+	\end{table}
+	\newline\noindent
+	Hipotezy dla testu:
+	\begin{itemize}[label=$\bullet$]
+		\item $H_0:$ Dane pochodzą z modelu symetrii
+		\item $H_1:$ Dane nie pochodzą z modelu symetrii
+	\end{itemize}
+	Test jest realizowany przy założeniu, że poziom trudności obydwu kolokwiów był taki sam. W przypadku tablic 2 na 2 model symetrii jest równoważny jednorodności rozkładów brzegowych \pauza jeśli dane pochodzą z modelu symetrii, to oznacza, że studenci byli tak samo przygotowani do obydwu kolokwiów.
+	
+	W celu zweryfikowania hipotezy należało skorzystać z testu Mc{\dywiz}Nemary. Test należało wykonać dla własnej funkcji i porównać wynik z funkcją wbudowaną w pakiecie R.\newline\noindent
+	Funkcja wyliczająca p{\dywiz}wartość testu McNemary:
+	<<>>=
+	funkcja.mcnemar.test <- function(data, correct){
+		if (correct == F) {
+			Z0 <- (data[1, 2] - data[2, 1])/
+				(sqrt(data[1, 2] + data[2, 1]))
+			2*(1 - pnorm(abs(Z0)))
+		} else if (correct == T) {
+			Z02_corr <- (abs(data[1, 2] - data[2, 1]) - 1)^2/
+				(data[1, 2] + data[2, 1])
+			1 - pchisq(Z02_corr, 1)
+		}
+	}
+	@
+	Test McNemary możemy wykonać z lub bez poprawki na ciągłość. Jeśli chcemy skorzystać z poprawki, to jako drugi argument funkcji \verb|funkcja.mcnemar.test| podajemy wartość \verb|TRUE|, a jeśli nie chcemy, to \verb|FALSE|.\newline\noindent
+	<<>>=
+	(data <- matrix(c(32, 22, 44, 38), nrow=2))
+	@
+	Otrzymałem następującą p{\dywiz}wartość:
+	<<>>=
+	funkcja.mcnemar.test(data, FALSE)
+	@
+	W celu porównania z funkcją wbudowaną, korzystamy z funkcji \verb|mcnemar.test|:
+	<<>>=
+	mcnemar.test(data, correct=FALSE)$p.value
+	@
+	
+	Uzyskałem taki sam wynik dla funkcji zaimplementowanej i dla funkcji wbudowanej, równy w przybliżeniu 0.007. Uzyskana p{\dywiz}wartość jest mniejsza niż założony poziom istotności $\alpha=0.05$, możemy na tej podstawie odrzucić hipotezę o tym, że studenci byli tak samo przygotowani do obydwu kolokwiów (można założyć że dane nie pochodzą z modelu symetrii).
+	\subsection{Zadanie 2.}
+	W tym zadaniu należało zweryfikować hipotezę, dla podanych wyników ankiety o skuteczności dwóch leków \pauza tabela (\ref{tab:tabela2}), że ich skuteczność  jest jednakowa. Należało skorzystać z testów:
+	\begin{itemize}[label=$\bullet$]
+		\item McNemary z poprawką na ciągłość
+		\item dokładnego
+	\end{itemize}
+	Hipotezy dla testów:
+	\begin{itemize}[label=$\bullet$]
+		\item $H_0:$ Leki A i B mają jednakową skuteczność (dane pochodzą z modelu symetrii)
+		\item $H_1:$ Leki A i B mają różną skuteczność (dane nie pochodzą z modelu symetrii)
+	\end{itemize}
+	Testy przeprowadziłem na poziomie istotności $\alpha=0.05$. Podobnie jak w zadaniu pierwszym nasze dane to tablica 2 na 2 \pauza model symetrii jest równoważny jednorodności rozkładów brzegowych.\newline\noindent
+	Zaimportowałem bibliotekę, dzięki której będzie można skorzystać z testu wbudowanego dla testu dokładnego:
+	<<warning=F, message=F>>=
+	library(exact2x2)
+	@
+	Dane do zadania:
+	\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{cccc}
+				\hline
+				& \multicolumn{2}{c}{Reakcja na lek A} & \\\cline{2-3}
+				Reakcja na lek B & Negatywna & Pozytywna & Suma \\\hline
+				Negatywna & 1 & 5 & 6 \\
+				Pozytywna & 2 & 4 & 6 \\\hline
+				Suma & 3 & 9 & 12 \\\hline
+			\end{tabular}
+		\end{center}
+		\caption{Dane do zadania 2.}
+		\label{tab:tabela2}
+	\end{table}
+	\newline
+	Każdy z dwóch testów wykonałem korzystając z funkcji zaimplementowanej i z funkcji wbudowanej w pakiet R.
+	<<>>=
+	(data2 <- matrix(c(1, 2, 5, 4), nrow=2))
+	@
+	\begin{itemize}[label=$\bullet$]
+		\item Dla testu McNemary z poprawką na ciągłość:
+		Skorzystałem z funkcji opisanej w podrozdziale (\ref{section:zadanie1_lista10}), podając jako drugi argument funkcji wartość \verb|TRUE|:
+		<<>>=
+		funkcja.mcnemar.test(data2, TRUE)
+		@
+		Dla funkcji wbudowanej:
+		<<>>=
+		mcnemar.test(data2, TRUE)$p.value
+		@
+		
+		Otrzymałem dokładnie takie same wartości p dla testów, równe w przybliżeniu 0.45 i większe niż założony poziom istotności $\alpha=0.05$, więc nie ma podstaw do odrzucenia hipotezy o tym, że leki są jednakowo skuteczne.
+		\item Dla testu dokładnego:\newline\noindent
+		W pierwszym kroku należało napisać funkcję wyznaczającą wartość poziomu krytycznego testu dokładnego:
+		<<>>=
+		exact.mcnemar.test <- function(data){
+			if (data[1, 2] == (data[1, 2] + data[2, 1])/2){
+				1
+			} else if (data[1, 2] < (data[1, 2] + data[2, 1])/2){
+				suma <- 0
+				for (k in 0:data[1,2]){
+					suma <- suma + choose(data[1, 2] + data[2, 1], k) *
+						(1/2)^k * (1/2)^(data[1, 2] + data[2, 1] - k)
+				}
+				2 * suma
+			} else {
+				suma <- 0
+				for (k in data[1, 2]:(data[1, 2] + data[2, 1])){
+					suma <- suma + choose(data[1, 2] + data[2, 1], k) *
+						(1/2)^k * (1/2)^(data[1, 2] + data[2, 1] - k)
+				}
+				2 * suma
+			}
+		}
+		@
+		Następnie wykonałem test, korzystając z powyższej funkcji i z funkcji \verb|mcnemar.exact|:
+		<<>>=
+		exact.mcnemar.test(data2)
+		@
+		<<>>=
+		mcnemar.exact(data2)$p.value
+		@
+		
+		Otrzymane p{\dywiz}wartości są sobie równe i są większe niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$.
+	\end{itemize}
+	P{\dywiz}wartości testu dokładnego i McNemary (z uwzględnieniem poprawki na ciągłość) wartości równe w przybliżeniu odpowiednio: 0.453 i 0.45. Przy założonym poziomie istotności $\alpha=0.05$ nie mamy podstaw do odrzucenia hipotezy zerowej $H_0$ \pauza zakładamy, że leki A i B mają jednakową skuteczność.
+	\subsection{Zadanie 3.}
+	W tym zadaniu należało przeprowadzić symulacje, której celem jest porównanie funkcji mocy testu $Z$ i testu $Z_0$. Wyniki należało przedstawić w tabelach lub na wykresach oraz napisać odpowiednie wnioski.
+	
+	Hipotezy dla testów $Z$ i $Z_0$:
+	\begin{itemize}[label=$\bullet$]
+		\item Rozkłady brzegowe są jednorodne: $p_{+1} = p_{1+}$ lub $p_{+2} = p_{2+}$
+		\item Rozkłady brzegowe  nie są jednorodne: $p_{+1} \neq p_{1+}$ lub $p_{+2} \neq p_{2+}$
+	\end{itemize}
+	W pierwszym kroku napisałem funkcje wyznaczające wartości poziomu krytycznego dla testów $Z$ i $Z_0$:
+	<<>>=
+	rm("data")
+	@
+	\begin{itemize}[label=$\bullet$]
+		\item Funkcja dla testu $Z$:
+		<<>>=
+		Z_test <- function(data){
+			n <- sum(data)
+			data <- data/n
+			p1 <- rowSums(data)[1]
+			p2 <- colSums(data)[1]
+			D <- p1 - p2
+			sigma2 <- (p1*(1-p1) + p2*(1-p2) - 2*(data[1, 1]*data[2, 2] -
+			data[1, 2]*data[2, 1]))/n
+			Z <- D/sqrt(sigma2)
+			2*(1 - pnorm(abs(Z)))
+		}
+		@
+		\item Funkcja dla testu $Z_0$:
+		<<>>=
+		Z0_test <- function(data){
+			Z0 <- (data[1, 2] - data[2, 1])/sqrt(data[1, 2] + data[2, 1])
+			2*(1 - pnorm(abs(Z0)))
+		}
+		@
+	\end{itemize}
+	W następnym kroku napisałem funkcję, która dla zadanych prawdopodobieństw $p_1$ i $p_2$, odpowiadających za prawdopodobieństwa wyboru jednej z dwóch odpowiedzi w ankiecie oraz ilości ankietowanych $n$ zwraca tablicę wyników ankiety:
+	<<>>=
+	pyt_ankietowe <- function(n, p1, p2){
+		true1 <- ifelse(p1 < runif(n), 1, 0)
+		true2 <- ifelse(p2 < runif(n), 1, 0)
+		data1 <- sum(ifelse(true1 == 0 & true2 == 0, 1, 0))
+		data2 <- sum(ifelse(true1 == 0 & true2 == 1, 1, 0))
+		data3 <- sum(ifelse(true1 == 1 & true2 == 0, 1, 0))
+		data4 <- sum(ifelse(true1 == 1 & true2 == 1, 1, 0))
+		matrix(c(data1, data2, data3, data4), byrow=T, nrow=2)
+	}
+	@
+	Do przeprowadzenia symulacji należało przyjąć następujące wartości niektórych statystyk:
+	\begin{itemize}[label=$\bullet$]
+		\item Poziom istotności $\alpha=0.05$
+		\item Ilości ankietowanych: $n\in\{20, 30, 50, 100, 1000\}$
+		\item Prawdopodobieństwo wyboru jednej (konkretnej) z dwóch odpowiedzi na pierwsze pytanie: $p_1=0.5$
+		\item Ilość powtórzeń Monte{\dywiz}Carlo, na podstawie której jest wyliczona wartość funkcji mocy testu: 10000
+	\end{itemize}
+	<<>>=
+	alfa <- 0.05
+	n <- c(20, 30, 50, 100, 1000)
+	p1 <- 0.5
+	MC <- 10000
+	@
+	Następnie napisałem funkcję, która dla podanej jako argument liczby $n$ ankietowanych i testu, zwraca wartości funkcji mocy tego testu:
+	<<>>=
+	funkcja.mocy <- function(test, i){
+		p2 <- seq(0.01, 0.99, by=0.01)
+		wart_test <- numeric(99)
+		for (j in p2){
+			wart_test[which(p2 == j)] <- sum(sapply(1:MC, function(...){
+			XY <- pyt_ankietowe(i, p1, j)
+			test(XY) < alfa
+			}))/MC
+		}
+		wart_test}
+	@
+	Teraz wyznaczyłem wartości funkcji mocy dla testów $Z$ i $Z_0$ dla każdej wartości z wektora $n$:
+	<<cache=T, warning=F>>=
+	f.mocy.z.n20 <- funkcja.mocy(Z_test, 20)
+	f.mocy.z.n30 <- funkcja.mocy(Z_test, 30)
+	f.mocy.z.n50 <- funkcja.mocy(Z_test, 50)
+	f.mocy.z.n100 <- funkcja.mocy(Z_test, 100)
+	f.mocy.z.n1000 <- funkcja.mocy(Z_test, 1000)
+	f.mocy.z0.n20 <- funkcja.mocy(Z0_test, 20)
+	f.mocy.z0.n30 <- funkcja.mocy(Z0_test, 30)
+	f.mocy.z0.n50 <- funkcja.mocy(Z0_test, 50)
+	f.mocy.z0.n100 <- funkcja.mocy(Z0_test, 100)
+	f.mocy.z0.n1000 <- funkcja.mocy(Z0_test, 1000)
+	@
+	<<echo=F, cache=T>>=
+	while (any(is.na(f.mocy.z.n20)) == TRUE){
+		f.mocy.z.n20 <- funkcja.mocy(Z0_test, 20)
+	}
+	while (any(is.na(f.mocy.z0.n20)) == TRUE){
+		f.mocy.z0.n20 <- funkcja.mocy(Z0_test, 20)
+	}
+	@
+	Wykresy:
+	<<echo=F, f_mocy_z_20_30, fig.height=10, fig.cap="Wykres funkcji mocy testu $Z$ dla $n=20$ i $n=30$">>=
+	par(mfrow=c(2, 1))
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z.n20, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z, dla n=20",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z.n30, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z, dla n=30",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	@
+	<<echo=F, f_mocy_z_50_100, fig.height=10, fig.cap="Wykres funkcji mocy testu $Z$ dla $n=50$ i $n=100$">>=
+	par(mfrow=c(2, 1))
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z.n50, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z, dla n=50",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z.n100, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z, dla n=100",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	@
+	<<echo=F, f_mocy_z_1000_z0_20, fig.height=10, fig.cap="Wykres funkcji mocy testu $Z$ dla $n=1000$ i testu $Z_0$ dla $n=20$">>=8
+	par(mfrow=c(2, 1))
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z.n1000, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z, dla n=1000",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z0.n20, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z0, dla n=20",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	@
+	<<echo=F, f_mocy_z0_30_50, fig.height=10, fig.cap="Wykres funkcji mocy testu $Z_0$ dla $n=30$ dla $n=50$">>=8
+	par(mfrow=c(2, 1))
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z0.n30, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z0, dla n=30",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z0.n50, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z0, dla n=50",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	@
+	<<echo=F, f_mocy_z0_100_1000, fig.height=10, fig.cap="Wykres funkcji mocy testu $Z_0$ dla $n=100$ i $n=1000$">>=
+	par(mfrow=c(2, 1))
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z0.n100, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z0, dla n=100",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	plot(seq(0.01, 0.99, by=0.01), f.mocy.z0.n1000, "l", lwd=2, col="red",
+	main="Funkcja mocy testu Z0, dla n=1000",
+	ylab="Wartość funkcji mocy testu",
+	xlab="Wartość p2")
+	abline(h = 0.05, v = 0.5, col = "gray60")
+	@
+	\newpage
+	Na rysunkach (\ref{fig:f_mocy_z_20_30}), (\ref{fig:f_mocy_z_50_100}), (\ref{fig:f_mocy_z_1000_z0_20}), (\ref{fig:f_mocy_z0_30_50}), (\ref{fig:f_mocy_z0_100_1000}) przedstawiłem wykresy funkcji mocy testów $Z$ i $Z_0$ dla $n\in\{20, 30, 50, 100, 1000\}$, na podstawie symulacji Monte{\dywiz}Carlo dla \Sexpr{MC} powtórzeń. Dodatkowo na każdym wykresie narysowałem dwie linie szarym kolorem \pauza poziomą, dla wartości $0.05$ i pionową, dla argumentu $0.5$. Punkt przecięcia tych linii oznacza miejsce przez które powinna przechodzić funkcja mocy testu, ponieważ jest to miejsce, w którym prawdopodobieństwa $p_1$ i $p_2$ odpowiedzi na pytanie ankietowe są takie same, więc wtedy hipoteza zerowa powinna być przyjmowana z prawdopodobieństwem $1-\alpha$, czyli funkcja mocy testu powinna przyjmować wartość $\alpha=0.05$. Dla zwiększających się wartości $n$ widzimy, że wartości funkcji mocy są większe, dla $p_2\neq0.5$. Można było tego oczekiwać, ponieważ wraz ze wzrastającą liczbą prób (ankietowanych), test powinien być częściej odrzucany dla $p_1\neq p_2$, bo moc testu rośnie. Dla najmniejszych z rozważanych wartości $n$ można zauważyć, że wartość funkcji mocy testu w punkcie $p_2$ nieznacznie różni się od wartości $\alpha$, różnice są bardzo małe, jednak dla większych $n$ już nie są one widoczne. Można na tej podstawie wyciągnąć wniosek, że testy $Z$ i $Z_0$ są asymptotycznie nieobciążone.
+	\subsection{Wnioski}
+	W zadaniu pierwszym należało na podstawie danych, zweryfikować hipotezę na poziomie istotności $\alpha=0.05$, że studenci byli tak samo przygotowani do obydwu kolokwiów, przy założeniu, że ich poziom trudności był taki sam.\newline\noindent
+	W tym przypadku skorzystałem z testu McNemary, zaimplementowanego i wbudowanego w pakiecie R i uzyskałem dokładnie tę samą wartość poziomu krytycznego, pozwalającą przyjąć, że studenci nie byli tak samo przygotowani na dwa kolokwia.
+	
+	W zadaniu drugim należało na podstawie danych zweryfikować hipotezę na poziomie istotności $\alpha=0.05$, że skuteczność dwóch rozważanych leków jest jednakowa. Zadanie należało wykonać dla dwóch testów \pauza dokładnego i McNemary z poprawką na ciągłość. Obydwa testy wykonałem korzystąc z własnej i wbudowanej w pakiet R funkcji.\newline\noindent
+	Uzyskane p{\dywiz}wartości dla obydwu testów nieznacznie się różniły, a wartości funkcji zaimplementowanych zgadzały się z wartościami funkcji wbudowanych. Uzyskane wyniki pozwoliły założyć, że hipoteza zerowa $H_0$ jest prawdziwa, czyli mogłem przyjąć, że skuteczność dwóch rozważanych leków jest jednakowa.
+	
+	W ostatnim zadaniu z tej listy należało porównać symulacyjnie funkcje mocy testów $Z$ i $Z_0$.\newline\noindent
+	W tym celu zaimplementowałem własne funkcje dla testów $Z$ i $Z_0$. Następnie zaimplementowałem funkcję, która dla podanej jako argumenty liczby prób $n$ (ankietowanych) i prawdopodobieństw $p_1$ i $p_2$ odpowiedzi na konkretne pytanie, zwracała macierz z ilością odpowiedzi na pierwsze i drugie pytanie. Następnie dla zadanych parametrów przeprowadziłem symulację Monte{\dywiz}Carlo, której celem było narysowanie wykresów i porównanie funkcji mocy rozważanych testów.\newline\noindent
+	Dla obydwu testów wyciągnęłem wniosek, że są asymptotycznie nieobciążone \pauza dla małych $n$ wartości funkcji mocy nieco odbiegały od wartości $\alpha$ w punkcje $p_2$, które powinny osiągnąć (różnice te były bardzo małe). Funkcja mocy obydwu testów przyjmuje większe wartości (dla $p_2\neq0.5$) wraz ze wzrastającą liczbą prób $n$.
+	\section{Lista 11}
+	\subsection{Dane do zadań}
+	W tabeli (\ref{tab:tabela3}) przedstawiłem dane do zadań z tej listy:
+	\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{cccccccc}
+				\hline
+				& \multicolumn{6}{c}{Wyniki z kolokwium 1.} & \\\cline{2-6}
+				Wynik z kolokwium 2. & 2 & 3 & +3 & 4 &+4 & 5 & Suma \\\hline
+				2 & 5 & 2 & 1 & 0 & 0 & 0 & 8 \\
+				3 & 6 & 3 & 2 & 2 & 0 & 0 & 13\\
+				+3 & 1 & 4 & 5 & 5 & 2 & 2 & 19 \\
+				4 & 0 & 10 & 15 & 18 & 5 & 2 & 50 \\
+				+4 & 1 & 2 & 5 & 3 & 2 & 2 & 15 \\
+				5 & 0 & 1 & 3 & 4 & 3 & 2 & 13 \\\hline
+				Suma & 13 & 22 & 31 & 32 & 12 & 8 & 118 \\\hline
+			\end{tabular}
+		\end{center}
+		\caption{Dane do zadania 1. i 2.}
+		\label{tab:tabela3}
+	\end{table}
+	\subsection{Zadanie 1.}\label{section:zad_1_lista_11}
+	W tym zadaniu należało zweryfikować hipotezę, że dane z tabeli (\ref{tab:tabela3}) podlegają modelowi:
+	\begin{enumerate}[label=(\alph*)]
+		\item symetrii,
+		\item quasi{\dywiz}symetrii,
+		\item quasi{\dywiz}niezależności,
+	\end{enumerate}
+	korzystając z odpowiednich testów. Hipotezę należało zweryfikować na poziomie istotności $\alpha=0.05$. Trzeba było również zwrócić uwagę na problem z zastosowaniem do analizowanych danych testu Bowkera.
+	
+	<<>>=
+	data <- matrix(
+		c(5,2,1,0,0,0,6,3,2,2,0,0,1,4,5,5,2,
+		2,0,10,15,18,5,2,1,2,5,3,2,2,0,1,3,4,3,2), 
+		nrow=6, dimnames = list("Wyniki z kolokwium 1" = c("2","3",
+		"+3","4","+4","5"),
+		"Wyniki z kolokwium 2" = c("2","3","+3","4","+4","5")))
+	data
+	@
+	\begin{itemize}[label=$\bullet$]
+		\item Dla modelu symetrii:\newline
+		Hipotezy:
+		\begin{itemize}[label=*]
+			\item $H_0$: dane pochodzą z modelu symetrii
+			\item $H_1$: dane nie pochodzą z modelu symetrii
+		\end{itemize}
+		W pierwszym kroku skorzystamy z testu McNemary, korzystając z funkcji wbudowanej\newline\verb|mcnemar.test|:
+		<<>>=
+		mcnemar.test(data)$p.value
+		@
+		
+		Uzyskałem p{\dywiz}wartość \verb|NaN|, wynika to z tego, że w tych danych pojawiają się zera, więc w tym przypadku test McNemary jest nieodpowiedni.
+		
+		Korzystając z wykładu, wykonamy test ilorazu wiarygodności zaimplementowanego w bibliotece \verb|gnm|:
+		<<warning=FALSE, message=FALSE>>=
+		library(gnm)
+		@
+		Nasze dane muszą być przedstawione jako ramka danych
+		<<>>=
+		count <- c(5,2,1,0,0,0,6,3,2,2,0,0,1,
+			4,5,5,2,2,0,10,15,18,5,2,1,2,5,3,2,2,0,1,3,4,3,2)
+		kol1 <- gl(6,1,labels=c("2","3","+3","4","+4","5"))
+		kol2 <- gl(6,6,labels=c("2","3","+3","4","+4","5"))
+		wyniki <- data.frame(kol1, kol2, count)
+		@
+		
+		<<>>=
+		symmetry <- glm(count ~Symm(kol1, kol2), data=wyniki,
+			family=poisson)
+		@
+		Wyznaczamy p{\dywiz}wartość
+		<<>>=
+		x <- symmetry$deviance
+		x
+		r <- 15
+		p <- 1-pchisq(x,r)
+		p
+		@
+		
+		Uzyskałem p{\dywiz}wartość większą niż założony poziom istotności $\alpha=0.05$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, czyli można założyć, że nasze dane pochodzą z modelu symetrii.
+		\item Dla modelu quasi{\dywiz}symetrii:\newline
+		Hipotezy:
+		\begin{itemize}[label=*]
+			\item $H_0$: dane pochodzą z modelu quasi{\dywiz}symetrii
+			\item $H_1$: dane nie pochodzą z modelu quasi{\dywiz}symetrii
+		\end{itemize}
+		<<>>=
+		quasi.symmetry <- glm(count ~ kol1+kol2 + Symm(kol1, kol2), data=wyniki,
+			family=poisson)
+		
+		x <- quasi.symmetry$deviance
+		x
+		r <- 10
+		p <- 1-pchisq(x,r)
+		p
+		@
+		
+		Uzyskałem p{\dywiz}wartość znacznie wiżkszą niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, więc można założyć, że nasze dane pochodzą z modelu quasi{\dywiz}symetrii.
+		\item Dla modelu quasi{\dywiz}niezależności:\newline\noindent
+		Hipotezy:
+		\begin{itemize}[label=*]
+			\item $H_0$: dane pochodzą z modelu quasi{\dywiz}niezależności
+			\item $H_1$: dane nie pochodzą z modelu quasi{\dywiz}niezależności
+		\end{itemize}
+	<<>>=
+	quasi.indep <- glm(count ~ kol1 + kol2 + Diag(kol1, kol2),data=wyniki,
+		family = poisson)
+	
+	x <- quasi.indep$deviance
+	x
+	r <- 19
+	p <- 1-pchisq(x,r)
+	p
+	@
+	
+	P{\dywiz}wartość testu \verb|quasi.indep| jest równa w przybliżeniu 0.009 i jest mniejsza niż założony poziom istotności $\alpha$, więc są podstawy do odrzucenia hipotezy zerowej $H_0$ i przyjęcia hipotezy alternatywnej $H_1$, czyli można założyć, że nasze dane nie pochodzą z modelu quasi{\dywiz}niezależności.
+	\end{itemize}
+	\subsection{Zadanie 2.}
+	W tym zadaniu należało zweryfikować hipotezę, na poziomie istotności $\alpha=0.05$, że studenci byli tak samo przygotowani do obu kolokwiów, zakładając że poziom trudności zadań był taki sam na pierwszy i drugim kolokwium. Dane do zadania przedstawione są w tabeli (\ref{tab:tabela3}).
+	Hipotezy dla testu:
+	\begin{itemize}[label=$\bullet$]
+		\item $H_0:$ rozkłady brzegowe są jednorodne \pauza studenci byli tak samo przygotowani do obu kolokwiów
+		\item $H_1:$ rozkłady brzegowe nie są jednorodne \pauza studenci nie byli tak samo przygotowani do obu kolokwiów.
+	\end{itemize}
+	Model symetrii w przypadku tabel większych niż 2 na 2 implikuje jednorodność. W związku z tym, że w tym zadaniu analizujemy dokładnie te same dane, co w zadaniu 1. z tej listy, a w zadaniu 1a) (\ref{section:zad_1_lista_11}) nie odrzuciliśmy hipotezy o modelu symetrii, to korzystając z tej implikacji, że model symetrii implikuje jednorodność rozkładów brzegowych, nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, więc można założyć, że studenci byli tak samo przygotowani do obu kolokwiów.
+	\subsection{Wnioski}
+	W zadaniu 1. (\ref{section:zad_1_lista_11}) należało sprawdzić, czy dane z tabeli (\ref{tab:tabela3}), pochodzą z modelu:
+	\begin{itemize}[label=$\bullet$]
+		\item symetrii
+		\item quasi{\dywiz}symetrii
+		\item quasi{\dywiz}niezależności.
+	\end{itemize}
+	Przyjęłem poziom istotności $\alpha=0.05$ i korzystając z odpowiednich testów możemy założyć, że rozważane dane pochodzą z modelu symetrii i quasi{\dywiz}symetrii, ale nie pochodzą z modelu quasi{\dywiz}niezależności.
+	
+	W zadaniu drugim należało sprawdzić, czy studenci byli tak samo przygotowani na dwa kolokwia, przy założeniu, że poziom trudności obu kolokwiów był taki sam. W tym zadaniu powołałem się na wynik z zadania 1a), ponieważ dla tabel większych niż 2 na 2 model symetrii implikuje jednorodność rozkładów brzegowych, a w zadaniu 1a) nie było podstaw do odrzucenia hipotezy, że nasze dane pochodzą z modelu symetrii, więc można było na tej podstawie założyć jednorodność rozkładów brzegowych, a tym samym przyjąć hipotezę, że studenci byli tak samo przygotowani na dwa kolokwia.
+	\section{Lista 12\_13\_14}
+	\subsection{Dane do zadań}
+	Wszystkie zadania z tej listy należało wykonać dla danych z pliku \emph{Ankieta.csv}.
+	<<>>=
+	dane <- read.csv2("Ankieta.csv")
+	summary(dane)
+	@
+	Dane zawierają wyniki ankietowania 40 losowo wybranych studentów PWr. W ankiecie należało odpowiedzieć na trzy pytania:
+	\begin{itemize}[label=$\bullet$]
+		\item Czy dobrze sypiasz?
+		\item Czy regularnie biegasz?
+		\item Czy masz psa?
+	\end{itemize}
+	Liczba 1 oznacza odpowiedź ,,tak'', a liczba 0 \ppauza ,,nie''.\newline\noindent\\\\
+	\textbf{Uwaga:} Jako reprezentacje zmiennych (SEN, BIEGANIE, PIES) do budowania modeli log{\dywiz}liniowych przyjęłem:
+	\begin{itemize}[label=$\bullet$]
+		\item 1 \pauza SEN
+		\item 2 \pauza BIEGANIE
+		\item 3 \pauza PIES
+	\end{itemize}
+	\subsection{Zadanie 1.}
+	W tym zadaniu należało podać interpretację następujących modeli log{\dywiz}liniowych:
+	\begin{align}
+	\text{(a)} [1\:3] && \text{(b)} [13] && \text{(c)} [1\:2\:3] \\
+	\text{(d)} [12\:3] && \text{(e)} [12\:13] && \text{(f)} [1\:23],
+	\end{align}
+	zbudować model na podstawie danych z pliku, przeprowadzić test statystyczny, że dane pochodzą z określonego modelu log{\dywiz}liniowego i porównać wyznaczone przez model liczności z licznościami danych.
+	
+	W pierwszym kroku zaimportowałem potrzebne biblioteki i wczytałem oraz odpowiednio przygotowałem dane:
+	<<warning=FALSE, message=FALSE>>=
+	library(dplyr)
+	library(tidyverse)
+	@
+	<<>>=
+	dane <- read.csv2("Ankieta.csv")
+	dane <- mutate(dane, across(c("SEN", "BIEGANIE", "PIES"), as.factor))
+	dane <- ftable(dane)
+	dane.df <- as.data.frame(dane)
+	dane.df
+	@
+	Dla każdego modelu przeprowadziłem test statystyczny, sprawdzający czy dane pochodzą z tego modelu.\newline\noindent
+	Hipotezy dla testów:
+	\begin{itemize}[label=$\bullet$]
+		\item $H_0:$ Dane pochodzą z tego (określonego) modelu
+		\item $H_1:$ Dane pochodzą z modelu pełnego (uwzględniającego czynniki główne, interakcje pierwszego i drugiego rzędu)
+	\end{itemize}
+	Testy wykonujemy na poziomie istotności $\alpha=0.05$, a rozważane modele są hierarchiczne uporządkowane.
+	\begin{enumerate}[label=(\alph*)]
+		\item $[1\:3]$ \pauza zmienne ,,SEN'' i ,,PIES'' mają dowolne rozkłady oraz zmienne te są niezależne, a zmienna ,,BIEGANIE'' ma rozkład równomierny
+		<<>>=
+		model_a <- glm(Freq ~ SEN + PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_a), df = df.residual(model_a))
+		@
+		P{\dywiz}wartość jest mniejsza niż założony poziom istotności $\alpha$, więc można założyć, że hipoteza zerowa $H_0$ jest nieprawdziwa \pauza nasze dane nie pochodzą z modelu $[1\:3]$.
+		<<>>=
+		cbind(model_a$data, fitted(model_a))
+		@
+		
+		\item $[13]$ \pauza zmienne ,,SEN'' i ,,PIES'' mają dowolne rozkłady oraz zmienne te nie są niezależne, a zmienna ,,BIEGANIE'' ma rozkład równomierny
+		<<>>=
+		model_b <- glm(Freq ~ SEN + PIES + SEN * PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_b), df = df.residual(model_b))
+		@
+		P{\dywiz}wartość jest większa niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, czyli można założyć, że nasze dane pochodzą z modelu $[13]$.
+		<<>>=
+		cbind(model_b$data, fitted(model_b))
+		@
+		
+		\item $[1\:2\:3]$ \pauza zmienne ,,SEN'', ,,BIEGANIE'' i ,,PIES'' mają dowolne rozkłady oraz zmienne te są niezależne
+		<<>>=
+		model_c <- glm(Freq ~ SEN + BIEGANIE  + PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_c), df = df.residual(model_c))
+		@
+		P{\dywiz}wartość jest mniejsza niż założony poziom istotności $\alpha$, więc można założyć, ze hipoteza zerowa $H_0$ jest nieprawdziwa \pauza nasze dane nie pochodzą z modelu $[1\:2\:3]$.
+		<<>>=
+		cbind(model_c$data, fitted(model_c))
+		@
+		
+		\item $[12\:3]$ \pauza zmienne ,,SEN'', ,,BIEGANIE'' i ,,PIES'' mają dowolne rozkłady, zmienna ,,PIES'' jest niezależna od zmiennej ,,SEN'' i ,,BIEGANIE'', zmienne ,,SEN'' i ,,BIEGANIE'' nie są niezależne
+		<<>>=
+		model_d <- glm(Freq ~ SEN + BIEGANIE + SEN * BIEGANIE + PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_d), df = df.residual(model_d))
+		@
+		P{\dywiz}wartość jest większa niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, czyli można założyć, że nasze dane pochodzą z modelu $[12\:3]$.
+		<<>>=
+		cbind(model_d$data, fitted(model_d))
+		@
+		
+		\item $[12\:13]$ \pauza zmienne ,,SEN'', ,,BIEGANIE'' i ,,PIES'' mają dowolne rozkłady, zmienne ,,SEN'' i ,,BIEGANIE'' nie są niezależne, zmienne ,,SEN'' i ,,PIES'' nie są niezależne, a zmienne ,,BIEGANIE'' i ,,PIES'' są niezależne
+		<<>>=
+		model_e <- glm(Freq ~ SEN + BIEGANIE + SEN * BIEGANIE + SEN * PIES + PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_e), df = df.residual(model_e))
+		@
+		P{\dywiz}wartość jest większa niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, czyli można założyć, że nasze dane pochodzą z modelu $[12\:13]$.
+		<<>>=
+		cbind(model_e$data, fitted(model_e))
+		@
+		
+		\item $[1\:23]$ \pauza zmienne ,,SEN'', ,,BIEGANIE'' i ,,PIES'' mają dowolne rozkłady, zmienne ,,BIEGANIE'' i ,,PIES'' nie są niezależne, a zmienne ,,SEN'' i ,,BIEGANIE'' oraz ,,SEN'' i ,,PIES'' są niezależne
+		<<>>=
+		model_f <- glm(Freq ~ SEN + BIEGANIE + BIEGANIE * PIES + PIES, 
+		data = dane.df, family = poisson)
+		
+		1-pchisq(deviance(model_f), df = df.residual(model_f))
+		@
+		P{\dywiz}wartość jest większa niż założony poziom istotności $\alpha$, więc nie ma podstaw do odrzucenia hipotezy zerowej $H_0$, czyli można założyć, że nasze dane pochodzą z modelu $[1\:23]$.
+		<<>>=
+		cbind(model_f$data, fitted(model_f))
+		@
+		
+	\end{enumerate}
+	\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{|c|c|c|c|c|c|c|}
+				\hline
+				& \multicolumn{6}{c|}{Modele}\\\cline{2-7}
+				& $[1\:3]$ & $[13]$ & $[1\:2\:3]$& $[12\:3]$ & $[12\:13]$ & $[1\:23]$ \\\hline
+				P{\dywiz}wartość & \Sexpr{1-pchisq(deviance(model_a), df = df.residual(model_a))} & \Sexpr{1-pchisq(deviance(model_b), df = df.residual(model_b))} & \Sexpr{1-pchisq(deviance(model_c), df = df.residual(model_c))} & \Sexpr{1-pchisq(deviance(model_d), df = df.residual(model_d))} & \Sexpr{1-pchisq(deviance(model_e), df = df.residual(model_e))} & \Sexpr{1-pchisq(deviance(model_f), df = df.residual(model_f))}\\\hline
+			\end{tabular}
+		\end{center}
+		\caption{P{\dywiz}wartości testów statystycznych}
+		\label{tab:tabela4}
+	\end{table}
+
+		\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{|c||c|c|c|c|c|c|}
+				\hline
+				Liczności danych & \multicolumn{6}{c|}{Liczności modeli} \\\cline{2-7}
+				& $[1\:3]$ & $[13]$ & $[1\:2\:3]$& $[12\:3]$ & $[12\:13]$ & $[1\:23]$ \\\hline
+				\Sexpr{model_a$data$Freq[1]} & \Sexpr{fitted(model_a)[1]} & \Sexpr{fitted(model_b)[1]} & \Sexpr{fitted(model_c)[1]} & \Sexpr{fitted(model_d)[1]} & \Sexpr{fitted(model_e)[1]} & \Sexpr{fitted(model_f)[1]} \\\hline
+				\Sexpr{model_a$data$Freq[2]} & \Sexpr{fitted(model_a)[2]} & \Sexpr{fitted(model_b)[2]} & \Sexpr{fitted(model_c)[2]} & \Sexpr{fitted(model_d)[2]} & \Sexpr{fitted(model_e)[2]} & \Sexpr{fitted(model_f)[2]} \\\hline
+				\Sexpr{model_a$data$Freq[3]} & \Sexpr{fitted(model_a)[3]} & \Sexpr{fitted(model_b)[3]} & \Sexpr{fitted(model_c)[3]} & \Sexpr{fitted(model_d)[3]} & \Sexpr{fitted(model_e)[3]} & \Sexpr{fitted(model_f)[3]} \\\hline
+				\Sexpr{model_a$data$Freq[4]} & \Sexpr{fitted(model_a)[4]} & \Sexpr{fitted(model_b)[4]} & \Sexpr{fitted(model_c)[4]} & \Sexpr{fitted(model_d)[4]} & \Sexpr{fitted(model_e)[4]} & \Sexpr{fitted(model_f)[4]} \\\hline
+				\Sexpr{model_a$data$Freq[5]} & \Sexpr{fitted(model_a)[5]} & \Sexpr{fitted(model_b)[5]} & \Sexpr{fitted(model_c)[5]} & \Sexpr{fitted(model_d)[5]} & \Sexpr{fitted(model_e)[5]} & \Sexpr{fitted(model_f)[5]} \\\hline
+				\Sexpr{model_a$data$Freq[6]} & \Sexpr{fitted(model_a)[6]} & \Sexpr{fitted(model_b)[6]} & \Sexpr{fitted(model_c)[6]} & \Sexpr{fitted(model_d)[6]} & \Sexpr{fitted(model_e)[6]} & \Sexpr{fitted(model_f)[6]} \\\hline
+			\end{tabular}
+		\end{center}
+		\caption{Porównanie wyznaczonych liczności na podstawie modelów z rzeczywistymi licznościami danych}
+		\label{tab:tabela5}
+	\end{table}	
+	W tabelach (\ref{tab:tabela4}) i (\ref{tab:tabela5}) przedstawiłem zbiorczo p{\dywiz}wartości testów statystycznych i porównanie liczności z danych z licznościami wynikającymi z modeli.
+	\subsection{Zadanie 2.}
+	W tym zadaniu należało oszacować prawdopodobieństwo:
+	\begin{enumerate}[label=(\alph*)]
+		\item dobrej jakości snu studenta, który regularnie biega,
+		\item tego, że student biega regularnie, gdy posiada psa.
+	\end{enumerate}
+	przyjmując model log{\dywiz}liniowy $[12\:3]$. Należało również odpowiedzieć na pytanie jakie byłyby oszacowania powyższych prawdopodobieństw, przy założeniu modelu $[12\:23]$.
+	
+	\noindent
+	Aby wykonać to zadanie musimy wyznaczyć prawdopodobieństwa warunkowe. Wzór na prawdopodobieństwo warunkowe:
+	\begin{equation}\label{eqref:p_warunkowe}
+		P(A|B)=\frac{P(A\cap B)}{P(B)},\quad\text{gdzie:}
+	\end{equation}
+	\begin{itemize}[label=$\bullet$]
+		\item $A$ i $B$ to jakieś zdarzenia losowe
+		\item $P(B)>0$
+	\end{itemize}
+	W pierwszym kroku wyznaczyłem model $[12\:3]$:
+	<<>>=
+	dane.df
+	@
+	<<>>=
+	model <- glm(Freq ~ SEN*BIEGANIE + PIES, data = dane.df, family = poisson)
+	(result <- cbind(model$data, fitted(model)))
+	@
+	
+	Wartości w kolumnach z licznościami modelu i licznościami wyznaczonymi na podstawie modelu log{\dywiz}liniowego $[12\;3]$ zmieniłem na wartości prawdopodobieństw otrzymania tych wartości:
+	<<>>=
+	result$`fitted(model)` <- result$`fitted(model)`/sum(result$`fitted(model)`)
+	result$Freq <- result$Freq/sum(result$Freq)
+	result
+	@
+	\begin{itemize}[label=$\bullet$]
+		\item Dla podpunktu (a):\newline\noindent
+	Wyznaczyłem prawdopodobieństwa warunkowe dla liczności z przyjętego modelu log{\dywiz}liniowego, korzystając ze wzoru (\ref{eqref:p_warunkowe}), gdzie:
+	\begin{itemize}[label=*]
+		\item $A$ \pauza zdarzenie, że student dobrze śpi
+		\item $B$ \pauza zdarzenie, że student regularnie biega
+	\end{itemize}
+	<<>>=
+	(sum(result$`fitted(model)`[result$BIEGANIE == 1 & result$SEN == 1])
+	)/(sum(result$`fitted(model)`[result$BIEGANIE == 1]))
+	@
+	
+	i dla liczności wynikających z danych:
+	<<>>=
+	(sum(result$Freq[result$BIEGANIE == 1 & result$SEN == 1]
+	))/(sum(result$Freq[result$BIEGANIE == 1]))
+	@
+	
+	\item dla podpunktu (b):\newline\noindent
+ 	Wyznaczyłem prawdopodobieństwa warunkowe dla liczności z przyjętego modelu log{\dywiz}liniowego, korzystając ze wzoru (\ref{eqref:p_warunkowe}), gdzie:
+	 \begin{itemize}[label=*]
+	 	\item $A$ \pauza zdarzenie, że student biega regularnie
+	 	\item $B$ \pauza zdarzenie, że student posiada psa
+	 \end{itemize}
+ 	<<>>=
+ 	(sum(result$`fitted(model)`[result$PIES == 1 & result$BIEGANIE == 1])
+ 	)/((sum(result$`fitted(model)`[result$PIES == 1])))
+ 	@
+ 	
+ 	i dla liczności wynikających z danych:
+ 	<<>>=
+ 	(sum(result$Freq[result$PIES == 1 & result$BIEGANIE == 1])
+ 	)/((sum(result$Freq[result$PIES == 1])))
+ 	@
+ 	
+	\end{itemize}
+	Analogicznie dla modelu $[12\:23]$:
+	<<>>=
+	model <- glm(Freq ~ SEN*BIEGANIE + BIEGANIE*PIES, data = dane.df, family = poisson)
+	result <- cbind(model$data, fitted(model))
+	result$`fitted(model)` <- result$`fitted(model)`/sum(result$`fitted(model)`)
+	result$Freq <- result$Freq/sum(result$Freq)
+	@
+	
+	\begin{itemize}[label=$\bullet$]
+		\item Dla podpunktu (a):
+		\begin{itemize}[label=*]
+			\item Dla liczności wynikających z modelu:
+			<<echo=FALSE>>=
+			(sum(result$`fitted(model)`[result$BIEGANIE == 1 & result$SEN == 1])
+			)/(sum(result$`fitted(model)`[result$BIEGANIE == 1]))
+			@
+			\item Dla liczności wynikających z danych:
+			<<echo=FALSE>>=
+			(sum(result$Freq[result$BIEGANIE == 1 & result$SEN == 1]
+			))/(sum(result$Freq[result$BIEGANIE == 1]))
+			@
+		\end{itemize}
+	\item Dla podpunktu (b):
+		\begin{itemize}[label=*]
+			\item Dla liczności wynikających z modelu:
+			<<echo=FALSE>>=
+		 	(sum(result$`fitted(model)`[result$PIES == 1 & result$BIEGANIE == 1])
+			)/((sum(result$`fitted(model)`[result$PIES == 1])))
+			@
+			\item Dla liczności wynikających z danych:
+			<<echo=FALSE>>=
+		 	(sum(result$Freq[result$PIES == 1 & result$BIEGANIE == 1])
+			)/((sum(result$Freq[result$PIES == 1])))
+			@
+		\end{itemize}
+	\end{itemize}
+	\subsection{Zadanie 3.}
+	W tym zadaniu należało zweryfikować następujące hipotezy:
+	\begin{enumerate}[label=(\alph*)]
+		\item Zmienne losowe \emph{Sen}, \emph{Bieganie} i \emph{Pies} są wzajemnie niezależne
+		\item Zmienna losowa \emph{Pies} jest niezależna od pary zmiennych \emph{Sen} i \emph{Bieganie}
+		\item zmienna losowa \emph{Sen} jest niezależna od zmiennej \emph{Pies}, przy ustalonej zmiennej \emph{Bieganie}.
+	\end{enumerate}
+	
+	W celu rozwiązania tego zadania, należało zbudować odpowiedni model log{\dywiz}liniowy i przeprowadzić odpowieni test statystyczny:
+	\begin{itemize}[label=$\bullet$]
+		\item Dla podpunktu (a):\newline\noindent
+		Zmienne losowe (,,SEN'', ,,BIEGANIE'' i ,,PIES'') są wzajemnie niezależne.\newline\noindent
+		Hipotezy dla testów:
+		\begin{itemize}[label=$\bullet$]
+			\item $H_0$: Zmienne losowe \emph{Sen}, \emph{Bieganie} i \emph{Pies} są wzajemnie niezależne,
+			\item $H_1$: Zmienne losowe \emph{Sen}, \emph{Bieganie} i \emph{Pies} nie są wzajemnie niezależne
+		\end{itemize}
+		Zbudowałem model, który jest dobrą interpretacją tego polecenia:
+		<<>>=
+		model_a <- glm(Freq ~ SEN + BIEGANIE + PIES, data = dane.df, family = poisson)
+		@
+		oraz pewne dwa modele, w których jest jeden pełny (zawierający wszystkie interakcje) a drugi jest nadmodelem rozważanego modelu, ale nie jest modelem pełnym.
+		<<>>=
+		model_pelny <- glm(Freq ~ (SEN + BIEGANIE + PIES)^3, data = dane.df,
+			family = poisson)
+		nadmodel_a <- glm(Freq ~ SEN + BIEGANIE + PIES + BIEGANIE*PIES,
+			data = dane.df, family = poisson)
+		@
+		Teraz przeprowadziłem test równości wariancji, korzystając z funkcji \verb|anova| w pakiecie R, i wyznaczyłem p{\dywiz}wartość:
+		\begin{itemize}[label=*]
+			\item Dla modelu ogólnego:
+			<<>>=
+			test <- anova(model_a, model_pelny)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+			\item Dla nadmodelu:
+			<<>>=
+			test <- anova(model_a, nadmodel_a)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+		\end{itemize}
+		\item Dla podpunktu (b):\newline\noindent
+		Hipotezy dla testu:
+		\begin{itemize}[label=$\bullet$]
+			\item $H_0$: Zmienna losowa \emph{Pies} jest niezależna od pary zmiennych \emph{Sen} i \emph{Bieganie},
+			\item $H_1$: Zmienna losowa \emph{Pies} nie jest niezależna od pary zmiennych \emph{Sen} i \emph{Bieganie}.
+		\end{itemize}
+		Analogicznie jak dla podpunktu (a), zbudowałem model:
+		<<>>=
+		model_b <- glm(Freq ~ SEN * BIEGANIE + PIES + SEN + BIEGANIE, 
+			data = dane.df, family = poisson)
+		@
+		teraz nadmodel:
+		<<>>=
+		nadmodel_b <- glm(Freq ~ SEN * BIEGANIE + PIES * SEN, 
+		data = dane.df, family = poisson)
+		@
+		Testy statystyczne i p{\dywiz}wartości:
+		\begin{itemize}[label=*]
+			\item Dla modelu ogólnego:
+			<<>>=
+			test <- anova(model_b, model_pelny)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+			\item Dla nadmodelu:
+			<<>>=
+			test <- anova(model_b, nadmodel_b)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+		\end{itemize}
+		\item Dla podpunktu (c):\newline\noindent
+		Hipotezy dla testów:
+		\begin{itemize}[label=$\bullet$]
+			\item $H_0$: Zmienna losowa \emph{Sen} jest niezależna od zmiennej \emph{Pies}, przy ustalonej zmiennej \emph{Bieganie}
+			\item $H_1$: Zmienna losowa \emph{Sen} nie jest niezależna od zmiennej \emph{Pies}, przy ustalonej zmiennej \emph{Bieganie}
+		\end{itemize}
+		Analogicznie jak dla powyższych podpunktów, zbudowałem model:
+		<<>>=
+		model_c <- glm(Freq ~ SEN * BIEGANIE + BIEGANIE * PIES, 
+			data = dane.df, family = poisson)
+		@
+		teraz nadmodel:
+		<<>>=
+		nadmodel_c <- glm(Freq ~ SEN * BIEGANIE + BIEGANIE * PIES + SEN * PIES, 
+			data = dane.df, family = poisson)
+		@
+		Testy statystyczne i p{\dywiz}wartości:
+		\begin{itemize}[label=*]
+			\item Dla modelu ogólnego:
+			<<>>=
+			test <- anova(model_c, model_pelny)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+			\item Dla nadmodelu:
+			<<>>=
+			test <- anova(model_c, nadmodel_c)
+			1-pchisq(test$Deviance[2], df = test$Df[2])
+			@
+		\end{itemize}
+	\end{itemize}
+	\subsection{Zadanie 4.}
+	W tym zadaniu należało dokonać wyboru modelu log{\dywiz}liniowego w oparciu o:
+	\begin{enumerate}[label=(\alph*)]
+		\item testy
+		\item kryterium AIC
+		\item kryterium BIC
+	\end{enumerate}
+
+	W pierwszym kroku zaimportowałem potrzebne biblioteki:
+	<<>>=
+	library(tidyverse)
+	library(dplyr)
+	@
+	\noindent wczytałem i odpowiednio sformatowałem dane:
+	<<>>=
+	dane <- read.csv2("Ankieta.csv")
+	dane <- mutate(dane, across(c("SEN", "BIEGANIE", "PIES"), as.factor))
+	dane <- ftable(dane)
+	dane.df <- as.data.frame(dane)
+	@
+	
+	\begin{enumerate}[label=(\alph*)]
+		\item dla testów:\newline\noindent
+		Wybór modelu w oparciu o testy wykonywałem w ten sposób, że najpierw wzięłem model, w którym nie występują żadne interakcje \pauza $[1\;2\;3]$ i wykonałem test ilorazu wiarygodności (\verb|anova| z pakietu R), gdzie hipotezą alternatywną $H_1$ był model w którym dodawałem kolejne interakcje. Jeśli uzyskana p{\dywiz}wartość była większa niż założony poziom istotności $\alpha=0.05$, to przyjmowałem że model z hipotezy zerowej $H_0$ lepiej opisuje nasze dane, w przeciwnym wypadku, dla następnych testów przyjmowałem model z hipotezy alternatywnej jako model wyjściowy.\newline\noindent
+		Postępując w ten sposób doszedłem do modelu, który według testów najlepiej opisuje dane.
+		\begin{itemize}[label=$\bullet$]
+			\item model $[1\;2\;3]$ przeciwko modelowi $[12\;3]$:
+		<<>>=
+		model_1_2_3 <- glm(Freq ~ SEN + BIEGANIE + PIES, 
+		data = dane.df, family = poisson)
+		model_12_3 <- glm(Freq ~ SEN + BIEGANIE + SEN * BIEGANIE + PIES, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_1_2_3, model_12_3)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		uzyzkana p{\dywiz}wartość nie przekracza założonego poziomu istotności, więc można przyjąć, że model $[12\;3]$ jest teraz modelem wyjściowym,
+		
+		\item model $[12\;3]$ przeciwko modelowi $[13\;2]$:
+		<<>>=
+		model_13_2 <- glm(Freq ~ SEN + BIEGANIE + PIES + SEN*PIES, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_3, model_13_2)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		Uzyskana p{\dywiz}wartość jest większa niż założony poziom istotności $\alpha=0.05$, więc model $[12\;3]$ pozostaje jako model wyjściowy
+		\item model $[12\;3]$ przeciwko modelowi $[1\;23]$:
+		<<>>=
+		model_1_23 <- glm(Freq ~ SEN + (BIEGANIE + PIES)^2, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_3, model_1_23)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		uzyskana p{\dywiz}wartość jest równa 1 więc model z hipotezy zerowej $H_0$ \pauza $[12\;3]$ pozostaje modelem wyjściowym
+		\item model $[12\;3]$ przeciwko modelowi $[12\;23]$:
+		<<>>=
+		model_12_23 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (BIEGANIE + PIES)^2, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_3, model_12_23)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		Uzyskana wartość poziomu krytycznego jest mniejsza niż założony poziom istotności $\alpha$, więc przyjmujemy model z hipotezy alternatywnej $H_1$ \pauza $[12\;23]$ jako model wyjściowy,
+		\item model $[12\;23]$ przeciwko modelowi $[12\;13]$:
+		<<>>=
+		model_12_13 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (SEN + PIES)^2, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_23, model_12_13)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		P{\dywiz}wartość w teście jest równa 1, więc model $[12\;23]$ pozostaje jako model wyjściowy,
+		\item model $[12\;23]$ przeciwko modelowi $[12\;13\;23]$:
+		<<>>=
+		model_12_13_23 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (SEN + PIES)^2 + (BIEGANIE + PIES)^2, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_23, model_12_13_23)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		P{\dywiz}wartość jest większa niż założony poziom istotności, więc model $[12\;23]$ pozostaje jako model wyjściowy,
+		\item model $[12\;23]$ przeciwko modelowi $[123]$:
+		<<>>=
+		model_123 <- glm(Freq ~ (SEN + BIEGANIE + PIES)^3, 
+		data = dane.df, family = poisson)
+		
+		test <- anova(model_12_23, model_123)
+		1-pchisq(test$Deviance[2], df = test$Df[2])
+		@
+		Uzyskana p{\dywiz}wartość jest większa niż założony poziom istotności, więc zakładamy, że model $[12\;23]$ lepiej się dopasowuje do danych niż model $[123]$.
+		\end{itemize}
+	
+	
+	Przeprowadzając testy, zaczynając od modelu $[1\;2\;3]$, po kolei dodając interakcje, doszedłem do testu, w którym testowałem model $[12\;23]$ przeciwko modelowi $[123]$ i uzyskałem p{\dywiz}wartość, która pozwala założyć, że model $[12\;23]$ lepiej opisuje dane niż model $[123]$. Jednocześnie model $[123]$ jest modelem zawierającym wszystkie możliwe interakcje, więc możemy założyć, że jeśli chodzi o testy ilorazu wiarygodności, to model $[12\;23]$ najlepiej opisuje nasze dane.
+	
+	\item wybór modelu w oparciu o kryterium AIC:\newline\noindent
+	w tym przypadku skorzystałem z funkcji \verb|AIC| i wyznaczyłem wartości kryterium AIC dla każdego z możliwych 19 modeli:
+	<<>>=
+	model_ <- glm(Freq ~ 1, data = dane.df, family = poisson)
+	model_1 <- glm(Freq ~ SEN, data = dane.df, family = poisson)
+	model_2 <- glm(Freq ~ BIEGANIE, data = dane.df, family = poisson)
+	model_3 <- glm(Freq ~ PIES, data = dane.df, family = poisson)
+	model_1_2 <- glm(Freq ~ SEN + BIEGANIE, data = dane.df, family = poisson)
+	model_1_3 <- glm(Freq ~ SEN + PIES, data = dane.df, family = poisson)
+	model_2_3 <- glm(Freq ~ BIEGANIE + PIES, data = dane.df, family = poisson)
+	model_12 <- glm(Freq ~ (SEN + BIEGANIE)^2, data = dane.df, family = poisson)
+	model_13 <- glm(Freq ~ (SEN + PIES)^3, data = dane.df, family = poisson)
+	model_23 <- glm(Freq ~ (BIEGANIE + PIES)^2,
+		data = dane.df, family = poisson)
+	model_1_2_3 <- glm(Freq ~ SEN + BIEGANIE + PIES,
+		data = dane.df, family = poisson)
+	model_12_3 <- glm(Freq ~ (SEN + BIEGANIE)^2 + PIES,
+		data = dane.df, family = poisson)
+	model_13_2 <- glm(Freq ~ (SEN + PIES)^2 + BIEGANIE,
+		data = dane.df, family = poisson)
+	model_1_23 <- glm(Freq ~ SEN + (BIEGANIE + PIES)^2,
+		data = dane.df, family = poisson)
+	model_12_23 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (BIEGANIE + PIES)^2,
+		data = dane.df, family = poisson)
+	model_13_23 <- glm(Freq ~ (SEN + PIES)^2 + (BIEGANIE + PIES)^2,
+		data = dane.df, family = poisson)
+	model_12_13 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (SEN + PIES)^2,
+		data = dane.df, family = poisson)
+	model_12_23_13 <- glm(Freq ~ (SEN + BIEGANIE)^2 + (BIEGANIE + PIES)^2 +
+		(SEN + PIES)^2, data = dane.df, family = poisson)
+	model_123 <- glm(Freq ~ (SEN + BIEGANIE + PIES)^3,
+		data = dane.df, family = poisson)
+	
+	@
+	Najlepszym modelem będzie ten, dla którego wartość kryterium AIC będzie najmniejsza:
+	<<>>=
+	models_AIC <- c(AIC(model_), AIC(model_1), AIC(model_2), AIC(model_3),
+	AIC(model_1_2), AIC(model_1_3), AIC(model_2_3), AIC(model_12),
+	AIC(model_13), AIC(model_23), AIC(model_1_2_3), AIC(model_12_3),
+	AIC(model_13_2), AIC(model_1_23), AIC(model_12_23), AIC(model_13_23),
+	AIC(model_12_13), AIC(model_12_23_13), AIC(model_123))
+
+	min(models_AIC)
+	which(min(models_AIC) == models_AIC)
+	@
+	Najmniejsza wartość kryterium AIC wynosi \Sexpr{min(models_AIC)} i model dla którego ta wartość została osiągnięta, to model nr \Sexpr{which(min(models_AIC) == models_AIC)} \pauza w naszym wektorze \verb|models_AIC|, czyli model $[12\;23]$. Wartości kryterium AIC dla wszystkich modeli umieściłem w tabeli (\ref{tab:tabela6}).
+	
+	Sprawdziłem jeszcze jaki model zostanie wybrany, korzystając z funkcji wbudowanej \verb|step| w pakiecie R.
+	W tym celu jako argument tej funkcji podałem model, w którym występują wszystkie interakcje:
+	<<>>=
+	model <- glm(Freq ~ (SEN + BIEGANIE + PIES)^3, 
+	data = dane.df, family = poisson)
+	
+	step(model)
+	@
+	Model, na którym zatrzymał się program, to model $[12\;23]$, zgadza się to z naszymi obliczeniami.
+	\item wybór modelu w oparciu o kryterium BIC:\newline\noindent
+	W tym przypadku sposób wyboru jest analogiczny jak dla kryterium AIC, zmieniamy jedynie kryterium z AIC na BIC.
+	
+	Najlepszym modelem będzie ten, dla którego wartość kryterium BIC będzie najmniejsza:
+	<<>>=
+	models_BIC <- c(BIC(model_), BIC(model_1), BIC(model_2), BIC(model_3),
+	BIC(model_1_2), BIC(model_1_3), BIC(model_2_3), BIC(model_12),
+	BIC(model_13), BIC(model_23), BIC(model_1_2_3), BIC(model_12_3),
+	BIC(model_13_2), BIC(model_1_23), BIC(model_12_23), BIC(model_13_23),
+	BIC(model_12_13), BIC(model_12_23_13), BIC(model_123))
+
+	min(models_BIC)
+	which(min(models_BIC) == models_BIC)
+	@
+	Najmniejsza wartość kryterium BIC wynosi \Sexpr{min(models_BIC)} i model dla którego ta wartość została osiągnięta, to model nr \Sexpr{which(min(models_BIC) == models_BIC)} \pauza w naszym wektorze \verb|models_BIC|, czyli model $[12\;23]$. Wartości kryterium BIC dla wszystkich modeli umieściłem w tabeli (\ref{tab:tabela6}).
+	
+	Sprawdziłem jeszcze jaki model zostanie wybrany, korzystając z funkcji wbudowanej \verb|step| w pakiecie R.
+	W tym celu jako argument tej funkcji podałem model, w którym występują wszystkie interakcje oraz argument \verb|k|, który dla kryterium BIC wynosi $\ln{n}$, gdzie $n$ to ilość ankietowanych:
+	<<>>=
+	n <- nrow(read.csv2("Ankieta.csv"))
+	step(model, k=log(n))
+	@
+	Funkcja \verb|step| również zatrzymała się na modelu $[12\;23]$.
+	\end{enumerate}
+		\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\textbf{Model} & \textbf{Kryterium AIC} & \textbf{Kryterium BIC} \\\hline\hline
+				$[]$ & \Sexpr{AIC(model_)} & \Sexpr{BIC(model_)}\\\hline
+				$[1]$ & \Sexpr{AIC(model_1)} & \Sexpr{BIC(model_1)} \\\hline
+				$[2]$ & \Sexpr{AIC(model_2)} & \Sexpr{BIC(model_2)} \\\hline
+				$[3]$ & \Sexpr{AIC(model_3)} & \Sexpr{BIC(model_3)} \\\hline
+				$[1\;2]$ & \Sexpr{AIC(model_1_2)} & \Sexpr{BIC(model_1_2)} \\\hline
+				$[1\;3]$ & \Sexpr{AIC(model_1_3)} & \Sexpr{BIC(model_1_3)} \\\hline
+				$[2\;3]$ & \Sexpr{AIC(model_2_3)} & \Sexpr{BIC(model_2_3)} \\\hline
+				$[12]$ & \Sexpr{AIC(model_12)} & \Sexpr{BIC(model_12)} \\\hline
+				$[13]$ & \Sexpr{AIC(model_13)} & \Sexpr{BIC(model_13)} \\\hline
+				$[23]$ & \Sexpr{AIC(model_23)} & \Sexpr{BIC(model_23)} \\\hline
+				$[1\;2\;3]$ & \Sexpr{AIC(model_1_2_3)} & \Sexpr{BIC(model_1_2_3)} \\\hline
+				$[12\;3]$ & \Sexpr{AIC(model_12_3)} & \Sexpr{BIC(model_12_3)} \\\hline
+				$[13\;2]$ & \Sexpr{AIC(model_13_2)} & \Sexpr{BIC(model_13_2)} \\\hline
+				$[1\;23]$ & \Sexpr{AIC(model_1_23)} & \Sexpr{BIC(model_1_23)} \\\hline
+				$[12\;23]$ & \Sexpr{AIC(model_12_23)} & \Sexpr{BIC(model_12_23)} \\\hline
+				$[13\;23]$ & \Sexpr{AIC(model_13_23)} & \Sexpr{BIC(model_13_23)} \\\hline
+				$[12\;13]$ & \Sexpr{AIC(model_12_13)} & \Sexpr{BIC(model_12_13)} \\\hline
+				$[12\;23\;13]$ & \Sexpr{AIC(model_12_23_13)} & \Sexpr{BIC(model_12_23_13)} \\\hline
+				$[123]$ &\Sexpr{AIC(model_123)} & \Sexpr{BIC(model_123)} \\\hline
+			\end{tabular}
+		\end{center}
+		\caption{Wartości kryteriów AIC i BIC dla modeli}
+		\label{tab:tabela6}
+	\end{table}
+	\subsection{Wnioski}
+	Wszystkie zadania z tej listy należało przeprowadzić na podstawie danych z pliku \emph{Ankieta.csv}.
+	
+	W zadaniu pierwszym należało podać interpretację zadanych modeli log{\dywiz}liniowych, zbudować model na ich podstawie, przeprowadzić test statystyczny, że dane pochodzą z tego modelu log{\dywiz}liniowego i porównać liczności wynikające z modelu i liczności z danych.\newline\noindent
+	Po podaniu interpretacji zadanych modeli, zbudowałem modele i przeprowadziłem testy. Porównując liczności modeli \pauza kolumny \verb|fitted|, w których p{\dywiz}wartość pozwoliła przyjąć, że dane pochodzą z tego modelu, z licznościami wynikającymi z danych \pauza kolumny \verb|Freq|, można zauważyć, że rozbieżności nie były zbyt duże.
+	
+	W drugim zadaniu należało oszacować prawdopodobieństwa dobrej jakości snu studenta, który regularnie biega oraz tego, że student regularnie biega, gdy posiada psa. Należało przyjąć model log{\dywiz}liniowy $[12\;3]$ oraz odpowiedzieć na pytanie, jakie byłyby oszacowania tych samych prawdopodobieństw, przy założeniu modelu $[12\;23]$.\newline\noindent
+	Wartości prawdopodobieństw warunkowych, dla modelu $[12\;3]$ są takie same dla liczności wynikających z danych i liczności wynikających ze zbudowanego modelu, w przypadku wyliczania prawdopodobieństwa, że student dobrze śpi, jeśli regularnie biega, natomiast w przypadku wyznaczania drugiego zadanego prawdopodobieństwa, otrzymałem rozbieżność w wynikach. Dla przyjętego modelu $[12\;23]$ uzyskane wartości (z liczności danych i z liczności wynikających z modelu), dla obydwu rozważanych prawdopodobieństw warunkowych, są dokładnie takie same.
+	
+	W kolejnym zadaniu należało zweryfikować hipotezy:
+	\begin{enumerate}[label=(\alph*)]
+		\item Zmienne losowe \emph{Sen}, \emph{Bieganie} i \emph{Pies} są wzajemnie niezależne
+		\item Zmienna losowa \emph{Pies} jest niezależna od pary zmiennych \emph{Sen} i \emph{Bieganie}
+		\item Zmienna losowa \emph{sen} jest niezależna od zmiennej \emph{Pies}, przy ustalonej zmiennej \emph{Bieganie}.
+	\end{enumerate}
+	Aby rozwiązać to zadanie, należało zbudować dobry model log{\dywiz}liniowy i przeprowadzić test statystyczny, w którym jako hipotezę alternatywną należało wziąć nadmodel zbudowanego modelu, który nie jest modelem pełnym i model pełny.\newline\noindent
+	Interpretując uzyskane wyniki, można założyć, że:
+	\begin{itemize}[label=$\bullet$]
+		\item Zmienne losowe \emph{SEN}, \emph{BIEGANIE} i \emph{PIES} nie są wzajemnie niezależne,
+		\item Zmienna losowa \emph{Pies} jest niezależna od pary zmiennych \emph{Sen} i \emph{Bieganie},
+		\item Zmienna losowa \emph{Sen} jest niezależna od zmiennej \emph{Pies}, przy ustalonej zmiennej \emph{Bieganie}.
+	\end{itemize}
+
+	W ostatnim zadaniu należało dokonać wyboru modelu log{\dywiz}liniowego w oparciu o testy, kryterium AIC i kryterium BIC.\newline\noindent
+	Biorąc pod uwagę testy dostałem, że najlepszym modelem będzie model $[12\;23]$. W oparciu o kryteria AIC i BIC również mogłem wyciągnąć wniosek, że model $[12\;23]$ jest najlepszy z możliwych. W przypadku kryteriów informacyjnych, dobór najlepszego modelu wykonałem poprzez dwa podejścia \pauza wyznaczając minimalną wartość kryteriów z wszystkich możliwych 19 modeli oraz korzystając z wbudowanej w pakiet R funkcji \verb|step| Wartości kryteriów informacyjnych dla każdego modelu umieściłem w tabeli (\ref{tab:tabela6}).
+\end{document}

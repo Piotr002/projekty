@@ -1,0 +1,90 @@
+---
+title: "Czas"
+output: pdf_document
+date: "2023-08-16"
+header-includes:
+      - \usepackage{pdflscape}
+---
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(rstudioapi)
+library(knitr)
+library(kableExtra)
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
+
+
+```{r, echo=FALSE}
+data <- read.csv("czas.csv")
+data$czas <- substring(data$czas, 8, length(data$czas))
+colnames(data) <- c("czas", "Wrocław - Biały", "Wrocław - Kraków", "Kraków - Biały")
+data |> knitr::kable(
+    format = "latex",
+    align = "l",
+    booktabs = TRUE,
+    longtable = TRUE,
+    linesep = "",
+    ) %>%
+  kableExtra::kable_styling(
+      position = "center",
+      latex_options = c("striped", "repeat_header"),
+      stripe_color = "gray!15"
+    )
+```
+
+\newpage
+```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
+ggplot(data, aes(x=czas, y=`Wrocław - Biały`, group=1)) + 
+  geom_point() +
+  geom_line() +
+  labs(title="Czas w minutach Wrocław - Biały", y="Minuty", x="Godzina odjazdu") +
+  theme(axis.text.x = element_text(angle = 90, size=rel(1)),
+        axis.text.y = element_text(size=rel(1)),
+        plot.title = element_text(hjust = 0.5))
+```
+
+
+\newpage
+```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
+ggplot(data, aes(x=czas, y=`Wrocław - Kraków`, group=1)) + 
+  geom_point() +
+  geom_line() +
+  labs(title="Czas w minutach Wrocław - Kraków", y="Minuty", x="Godzina odjazdu") +
+  theme(axis.text.x = element_text(angle = 90, size=rel(1)),
+        axis.text.y = element_text(size=rel(1)),
+        plot.title = element_text(hjust = 0.5))
+```
+\newpage
+```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
+ggplot(data, aes(x=czas, y=`Kraków - Biały`, group=1)) + 
+  geom_point() +
+  geom_line() +
+  labs(title="Czas w minutach Kraków - Biały", y="Minuty", x="Godzina odjazdu") +
+  theme(axis.text.x = element_text(angle = 90, size=rel(1)),
+        axis.text.y = element_text(size=rel(1)),
+        plot.title = element_text(hjust = 0.5))
+```
+\newpage
+```{r, echo=FALSE}
+dat<- data.frame(t=seq(0, 2*pi, by=0.1) )
+ xhrt <- function(t) 16*sin(t)^3
+ yhrt <- function(t) 13*cos(t)-5*cos(2*t)-2*cos(3*t)-cos(4*t)
+ dat$y=yhrt(dat$t)
+ dat$x=xhrt(dat$t)
+ with(dat, plot(x,y, type="l"))
+ 
+with(dat, polygon(x,y, col="hotpink"))
+points(c(10,-10, -15, 15), c(-10, -10, 10, 10), pch=169, font=5)
+text(x = 0, y = 0,                # Add text element
+     "Kocham Cię Basiu", font=4, cex=2)
+```
+
+
+
+
+
+
+

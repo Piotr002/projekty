@@ -1,7 +1,7 @@
 ---
 title: "Czas"
 output: pdf_document
-date: "2023-08-16"
+date: "2023-08-17"
 header-includes:
       - \usepackage{pdflscape}
 ---
@@ -13,7 +13,7 @@ library(rstudioapi)
 library(knitr)
 library(kableExtra)
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ```
 
 
@@ -21,7 +21,11 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 data <- read.csv("czas.csv")
 data$czas <- substring(data$czas, 8, length(data$czas))
 colnames(data) <- c("czas", "Wrocław - Biały", "Wrocław - Kraków", "Kraków - Biały")
-data |> knitr::kable(
+data |>
+  dplyr::mutate(`Wrocław - Biały` = paste(`Wrocław - Biały`%/%60, "h", `Wrocław - Biały` %% 60, "min")) |> 
+  dplyr::mutate(`Wrocław - Kraków` = paste(`Wrocław - Kraków`%/%60, "h", `Wrocław - Kraków` %% 60, "min")) |> 
+  dplyr::mutate(`Kraków - Biały` = paste(`Kraków - Biały`%/%60, "h", `Kraków - Biały` %% 60, "min")) |> 
+  knitr::kable(
     format = "latex",
     align = "l",
     booktabs = TRUE,
@@ -35,52 +39,61 @@ data |> knitr::kable(
     )
 ```
 
+
+```{r, echo=FALSE, results=FALSE}
+fastest <- data |> 
+  dplyr::filter(`Wrocław - Biały` == min(`Wrocław - Biały`)) |> 
+  dplyr::mutate(`Wrocław - Biały` = paste(`Wrocław - Biały`%/%60, "h", `Wrocław - Biały` %% 60, "min")) |> 
+  dplyr::mutate(`Wrocław - Kraków` = paste(`Wrocław - Kraków`%/%60, "h", `Wrocław - Kraków` %% 60, "min")) |> 
+  dplyr::mutate(`Kraków - Biały` = paste(`Kraków - Biały`%/%60, "h", `Kraków - Biały` %% 60, "min"))
+slowest <- data |> 
+  dplyr::filter(`Wrocław - Biały` == max(`Wrocław - Biały`)) |> 
+  dplyr::mutate(`Wrocław - Biały` = paste(`Wrocław - Biały`%/%60, "h", `Wrocław - Biały` %% 60, "min")) |> 
+  dplyr::mutate(`Wrocław - Kraków` = paste(`Wrocław - Kraków`%/%60, "h", `Wrocław - Kraków` %% 60, "min")) |> 
+  dplyr::mutate(`Kraków - Biały` = paste(`Kraków - Biały`%/%60, "h", `Kraków - Biały` %% 60, "min"))
+```
+
+Najszybciej się dojedzie jak się wyjedzie o **`r fastest$czas`**, wtedy planowo jest **`r fastest$"Wrocław - Biały"[1]`**, a najwolniej jak się wyjedzie o **`r slowest$czas`**, wtedy planowo jest **`r slowest$"Wrocław - Biały"[1]`**.
+
 \newpage
 ```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
-ggplot(data, aes(x=czas, y=`Wrocław - Biały`, group=1)) + 
-  geom_point() +
-  geom_line() +
+ggplot(data=data, aes(x = seq(1,nrow(data)))) + 
+  geom_point(aes(y=`Wrocław - Biały`)) +
+  geom_line(aes(y=`Wrocław - Biały`)) +
   labs(title="Czas w minutach Wrocław - Biały", y="Minuty", x="Godzina odjazdu") +
   theme(axis.text.x = element_text(angle = 90, size=rel(1)),
         axis.text.y = element_text(size=rel(1)),
-        plot.title = element_text(hjust = 0.5))
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = seq(1,nrow(data)),
+                     labels = as.character(data$czas))
 ```
 
 
 \newpage
 ```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
-ggplot(data, aes(x=czas, y=`Wrocław - Kraków`, group=1)) + 
-  geom_point() +
-  geom_line() +
+ggplot(data=data, aes(x = seq(1,nrow(data)))) + 
+  geom_point(aes(y=`Wrocław - Kraków`)) +
+  geom_line(aes(y=`Wrocław - Kraków`)) +
   labs(title="Czas w minutach Wrocław - Kraków", y="Minuty", x="Godzina odjazdu") +
   theme(axis.text.x = element_text(angle = 90, size=rel(1)),
         axis.text.y = element_text(size=rel(1)),
-        plot.title = element_text(hjust = 0.5))
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = seq(1,nrow(data)),
+                     labels = as.character(data$czas))
 ```
 \newpage
 ```{r, echo=FALSE, out.extra='angle=90', out.width="150%", out.height="150%"}
-ggplot(data, aes(x=czas, y=`Kraków - Biały`, group=1)) + 
-  geom_point() +
-  geom_line() +
+ggplot(data=data, aes(x = seq(1,nrow(data)))) + 
+  geom_point(aes(y=`Kraków - Biały`)) +
+  geom_line(aes(y=`Kraków - Biały`)) +
   labs(title="Czas w minutach Kraków - Biały", y="Minuty", x="Godzina odjazdu") +
   theme(axis.text.x = element_text(angle = 90, size=rel(1)),
         axis.text.y = element_text(size=rel(1)),
-        plot.title = element_text(hjust = 0.5))
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = seq(1,nrow(data)),
+                     labels = as.character(data$czas))
 ```
-\newpage
-```{r, echo=FALSE}
-dat<- data.frame(t=seq(0, 2*pi, by=0.1) )
- xhrt <- function(t) 16*sin(t)^3
- yhrt <- function(t) 13*cos(t)-5*cos(2*t)-2*cos(3*t)-cos(4*t)
- dat$y=yhrt(dat$t)
- dat$x=xhrt(dat$t)
- with(dat, plot(x,y, type="l"))
- 
-with(dat, polygon(x,y, col="hotpink"))
-points(c(10,-10, -15, 15), c(-10, -10, 10, 10), pch=169, font=5)
-text(x = 0, y = 0,                # Add text element
-     "Kocham Cię Basiu", font=4, cex=2)
-```
+
 
 
 

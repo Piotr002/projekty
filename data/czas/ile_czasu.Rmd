@@ -1,0 +1,33 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-08-21"
+---
+
+```{r, warning=F, message=F}
+library(dplyr)
+library(tibble)
+```
+
+
+```{r}
+dataframe <- read.delim("czas20.csv")
+
+dataframe <- sapply(1:nrow(dataframe), function(i){
+    dataframe[i, 1] <- gsub(",,", "", dataframe[i, 1])
+  })
+date <- sapply(2:length(dataframe), function(i){
+  dataframe[i] |> substring(1, 12)
+})
+value <- sapply(2:length(dataframe), function(i){
+  dataframe[i] |> substring(14, 16)
+})
+
+dataframe <- tibble::tibble(`Bielany - pwr` = date,
+                            `czas` = value) |> 
+  dplyr::mutate(`czas` = as.numeric(czas)) |> 
+  dplyr::mutate(`czas` = czas)
+
+dataframe
+```
+

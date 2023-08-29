@@ -20,7 +20,7 @@ driver.get("https://www.google.com/maps/dir///@52.4010064,16.920086,17z/data=!4m
 zaakceptuj = driver.find_element(By.XPATH, "//span[text()='Zaakceptuj wszystko']")
 zaakceptuj.click()
 
-while datetime.datetime.now().hour < 20:
+while datetime.datetime.now().hour < 18:
     try:
         driver.get("https://www.google.com/maps/dir///@52.4010064,16.920086,17z/data=!4m2!4m1!3e0?hl=pl-PL&entry=ttu")
         samochodem = driver.find_element(By.XPATH, "//img[@data-tooltip='Samochodem']")
@@ -33,7 +33,7 @@ while datetime.datetime.now().hour < 20:
         time.sleep(6)
         czas = driver.find_element(By.XPATH, "//div[@jstcache='82' and @class='cGRe9e']")
         temp = czas.text.replace(" h ", " ").replace(" min", "").split(" ") if "h" in czas.text else czas.text.replace(" min", "")
-        bie_pwr = 60 * int(temp[0]) + int(temp[1]) if "h" in czas.text
+        bie_pwr = 60 * int(temp[0]) + int(temp[1]) if "h" in czas.text else temp
         day = datetime.datetime.now().day if len(str(datetime.datetime.now().day)) == 2 else f"0{datetime.datetime.now().day}"
         month = datetime.datetime.now().month if len(str(datetime.datetime.now().month)) == 2 else f"0{datetime.datetime.now().month}"
         minute = datetime.datetime.now().minute if len(str(datetime.datetime.now().minute)) == 2 else f"0{datetime.datetime.now().minute}"

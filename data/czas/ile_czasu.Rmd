@@ -31,3 +31,12 @@ dataframe <- tibble::tibble(`Bielany - pwr` = date,
 dataframe
 ```
 
+```{r}
+dataframe2 <- read.csv("czas9.csv")
+dataframe2
+```
+
+
+
+
+

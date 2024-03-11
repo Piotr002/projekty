@@ -1,0 +1,887 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-11-24"
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(arules)
+library(MASS)
+library(randomForest)
+```
+
+```{r}
+automobile <- read.csv("imports-85.data", sep=",")
+colnames(automobile) <- c("symboling", "normalized_losses", "make", "fuel_type",
+                          "aspiration", "num_of_doors", "body_style", "drive_wheels",
+                          "engine_location", "wheel_base", "length", "width",
+                          "height", "curb_weight", "engine_type",
+                          "num_of_cylinders", "engine_size", "fuel_system",
+                          "bore", "stroke", "compression_ratio", "horsepower",
+                          "peak_rpm", "city_mpg", "highway_mpg", "price")
+```
+
+
+```{r}
+automobile <- automobile |> 
+  naniar::replace_with_na_all(condition=~.x %in% c("?"))
+automobile
+```
+
+```{r}
+automobile |> dplyr::mutate(fuel_type=as.factor(fuel_type),
+                            make = as.factor(make),
+                            normalized_losses=as.factor(normalized_losses))
+```
+
+```{r}
+automobile <- automobile |> 
+  dplyr::mutate(symboling=as.factor(symboling),
+                normalized_losses=as.numeric(normalized_losses),
+                make=as.factor(make),
+                fuel_type=as.factor(fuel_type),
+                aspiration=as.factor(aspiration),
+                num_of_doors=as.factor(num_of_doors),
+                body_style=as.factor(body_style),
+                drive_wheels=as.factor(drive_wheels),
+                engine_location=as.factor(engine_location),
+                wheel_base=as.numeric(wheel_base),
+                length=as.numeric(length),
+                width=as.numeric(width),
+                height=as.numeric(height),
+                curb_weight=as.numeric(curb_weight),
+                engine_type=as.factor(engine_type),
+                num_of_cylinders=as.factor(num_of_cylinders),
+                engine_size=as.numeric(engine_size),
+                fuel_system=as.factor(fuel_system),
+                bore=as.numeric(bore),
+                stroke=as.numeric(stroke),
+                compression_ratio=as.numeric(compression_ratio),
+                horsepower=as.numeric(horsepower),
+                peak_rpm=as.numeric(peak_rpm),
+                city_mpg=as.numeric(city_mpg),
+                highway_mpg=as.numeric(highway_mpg),
+                price=as.numeric(price))
+```
+
+
+```{r}
+automobile_quantitative <- automobile |> 
+	dplyr::select(where(is.numeric))
+automobile_qualitative <- automobile |> 
+	dplyr::select(where(is.factor))
+```
+
+```{r}
+df_long <- tidyr::gather(automobile_qualitative, key = "variable", value = "value")
+
+ggplot(df_long, aes(x = value)) +
+  geom_bar(aes(x=value)) +
+  facet_wrap(~variable, scales = "free") +
+  ggtitle("Distribution Plots")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+df_long <- tidyr::gather(automobile_quantitative, key = "variable", value = "value")
+
+ggplot(df_long, aes(x = value)) +
+  geom_point(aes(x=value, y=runif(length(value)))) +
+  facet_wrap(~variable, scales = "free") +
+  labs(title="Distribution Plots")
+```
+
+```{r}
+x <- arules::discretize(automobile$compression_ratio, breaks=2, method="cluster")
+```
+
+
+```{r}
+plot(automobile$compression_ratio, runif(length(automobile$compression_ratio)))
+breaks.equal.frequency <- attributes(x)$"discretized:breaks"
+abline(v = breaks.equal.frequency, col = "red", lwd=3)
+```
+
+```{r}
+automobile <- automobile |> 
+  VIM::kNN(imp_var=FALSE)
+```
+
+```{r}
+automobile <- discretizeDF(automobile, methods = list(
+  compression_ratio = list(method = "cluster", breaks = 2, 
+                     labels = c("low", "high")) 
+),default = list(method = "none"))
+```
+
+
+```{r}
+dataTransform <- caret::preProcess(automobile, method=c("center", "scale"))
+dataset <- predict(dataTransform, automobile)
+```
+
+
+```{r}
+library(ggplot2)
+
+# Reshape the data to long format using tidyr
+library(tidyr)
+df_long <- gather(dataset |> 
+  dplyr::select(where(is.numeric)), key = "Feature", value = "Value")
+
+# Create a boxplot using ggplot
+ggplot(df_long, aes(x = Feature, y = Value)) +
+  geom_boxplot() +
+  labs(title = "Boxplots of Features",
+       x = "Features",
+       y = "Values") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+```{r}
+automobile |> 
+  dplyr::select(-symboling)
+```
+```{r}
+data <- automobile |> 
+	dplyr::select(-symboling)
+class <- automobile$symboling
+```
+
+```{r}
+train <- caret::createDataPartition(y=class, times=1, p=0.85, list=FALSE)
+test <- automobile[-train,]
+automobile <- automobile[train,]
+```
+
+
+```{r}
+# inTrain <- caret::createDataPartition(y=class, times=1, p=4/5, list=FALSE)
+```
+
+```{r}
+# trainSet   <- data[inTrain,]
+# testSet    <- data[-inTrain,]
+# trainClass <- class[inTrain]
+# testClass  <- class[-inTrain]
+```
+
+```{r}
+automobile$symboling |> unique() |> length()
+```
+
+```{r}
+df_long_quantitative_symboling <- gather(automobile |> 
+  dplyr::select(where(is.numeric)), key = "Feature", value = "Value")
+df_long_quantitative_symboling <- df_long_quantitative_symboling |> 
+  dplyr::mutate(symboling=rep(automobile$symboling, automobile |> 
+  dplyr::select(where(is.numeric)) |> ncol()))
+
+ggplot(df_long_quantitative_symboling) +
+  geom_boxplot(aes(x=symboling, y=Value)) +
+  facet_wrap(~Feature, scales="free")
+```
+
+```{r}
+subsets <- c(1:4)
+
+rfeCtrl <- caret::rfeControl(functions=caret::rfFuncs,
+                                 method="cv",
+                                 verbose=FALSE)
+
+rf_profile <- caret::rfe(x=data,
+                        y=class,
+                        sizes=subsets,
+                        rfeControl=rfeCtrl)
+rf_profile
+```
+
+```{r}
+data
+```
+
+```{r}
+data <- automobile |> 
+	dplyr::select(-symboling)
+class <- automobile$symboling
+```
+
+```{r}
+class1 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==-2, 1, 2)) |> 
+  dplyr::pull()
+class2 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==-1, 1, 2)) |> 
+  dplyr::pull()
+class3 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==0, 1, 2)) |> 
+  dplyr::pull()
+class4 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==1, 1, 2)) |> 
+  dplyr::pull()
+class5 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==2, 1, 2)) |> 
+  dplyr::pull()
+class6 <- class |> as_tibble() |> 
+  mutate(value=ifelse(class==3, 1, 2)) |> 
+  dplyr::pull()
+```
+
+```{r}
+lm1 <- lm(class1 ~ ., data=data |> dplyr::select(where(is.numeric)))
+lm2 <- lm(class2 ~ ., data=data |> dplyr::select(where(is.numeric)))
+lm3 <- lm(class3 ~ ., data=data |> dplyr::select(where(is.numeric)))
+lm4 <- lm(class4 ~ ., data=data |> dplyr::select(where(is.numeric)))
+lm5 <- lm(class5 ~ ., data=data |> dplyr::select(where(is.numeric)))
+lm6 <- lm(class6 ~ ., data=data |> dplyr::select(where(is.numeric)))
+```
+
+```{r}
+a <- sapply(1:nrow(data), function(i){
+  c(predict(lm1, data[i, ]), predict(lm2, data[i, ]), predict(lm3, data[i, ]),
+  predict(lm4, data[i, ]), predict(lm5, data[i, ]), predict(lm6, data[i, ])) |> 
+  which.min()
+}) %>% replace(.==1, -2) %>%
+  replace(.==2, -1) %>%
+  replace(.==3, 0) %>%
+  replace(.==4, 1) %>%
+  replace(.==5, 2) %>%
+  replace(.==6, 3)
+```
+
+
+```{r}
+predict(lm2, newdata=data) |> round() |> table()
+```
+```{r}
+createFolds(class1, k = 5, list = FALSE, returnTrain = FALSE)
+```
+
+
+
+```{r}
+five_fold_cv <- function(dataset, class, classifier){
+  splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+  datasets <- list(dataset[splits==1,],
+               dataset[splits==2,],
+               dataset[splits==3,],
+               dataset[splits==4,],
+               dataset[splits==5,])
+  a <- datasets[[1]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  b <- datasets[[2]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  d <- datasets[[3]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  e <- datasets[[4]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  f <- datasets[[5]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  
+  a <- sapply(1:length(a), function(i){
+    a[[i]] |> length()
+  })
+  b <- sapply(1:length(b), function(i){
+    b[[i]] |> length()
+  })
+  d <- sapply(1:length(d), function(i){
+    d[[i]] |> length()
+  })
+  e <- sapply(1:length(e), function(i){
+    e[[i]] |> length()
+  })
+  f <- sapply(1:length(f), function(i){
+    f[[i]] |> length()
+  })
+  
+  matr <- matrix(c(a, b, d, e, f), nrow=5, byrow = TRUE) |> apply(2, unique)
+  remove_columns <- sapply(1:length(matr), function(i){
+                        ifelse(length(matr[[i]]) != 1, i, 0)
+                    })
+  remove_columns <- remove_columns[remove_columns != 0]
+  
+  datasets[[1]] <- datasets[[1]] |> dplyr::select(!remove_columns)
+  datasets[[2]] <- datasets[[2]] |> dplyr::select(!remove_columns)
+  datasets[[3]] <- datasets[[3]] |> dplyr::select(!remove_columns)
+  datasets[[4]] <- datasets[[4]] |> dplyr::select(!remove_columns)
+  datasets[[5]] <- datasets[[5]] |> dplyr::select(!remove_columns)
+  
+  classes <- list(class[splits==1] |> as.numeric(),
+                  class[splits==2] |> as.numeric(),
+                  class[splits==3] |> as.numeric(),
+                  class[splits==4] |> as.numeric(),
+                  class[splits==5] |> as.numeric())
+  bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+  bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+  sapply(1:5, function(i){
+    class1 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-2, 1, 0)) |> 
+      dplyr::pull()
+    class2 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+      dplyr::pull()
+    class3 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+      dplyr::pull()
+    class4 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+      dplyr::pull()
+    class5 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+      dplyr::pull()
+    class6 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+      dplyr::pull()
+    lm1 <- classifier(class1 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm2 <- classifier(class2 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm3 <- classifier(class3 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm4 <- classifier(class4 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm5 <- classifier(class5 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm6 <- classifier(class6 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    sum(unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+      c(predict(lm1, datasets[[i]][j, ]), predict(lm2, datasets[[i]][j, ]), predict(lm3, datasets[[i]][j, ]),
+      predict(lm4, datasets[[i]][j, ]), predict(lm5, datasets[[i]][j, ]), predict(lm6, datasets[[i]][j, ])) |> 
+      which.max()
+      })) %>% replace(.==1, -2) %>%
+        replace(.==2, -1) %>%
+        replace(.==3, 0) %>%
+        replace(.==4, 1) %>%
+        replace(.==5, 2) %>%
+        replace(.==6, 3) == classes[[i]])/length(classes[[i]])
+    }) |> mean()
+}
+```
+
+	
+	
+	LOGISTYCZNA
+	
+	
+
+```{r}
+five_fold_cv_logistic <- function(dataset, class, classifier){
+  splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+  datasets <- list(dataset[splits==1,],
+               dataset[splits==2,],
+               dataset[splits==3,],
+               dataset[splits==4,],
+               dataset[splits==5,])
+  
+  a <- datasets[[1]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  b <- datasets[[2]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  d <- datasets[[3]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  e <- datasets[[4]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  f <- datasets[[5]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  
+  a <- sapply(1:length(a), function(i){
+    a[[i]] |> length()
+  })
+  b <- sapply(1:length(b), function(i){
+    b[[i]] |> length()
+  })
+  d <- sapply(1:length(d), function(i){
+    d[[i]] |> length()
+  })
+  e <- sapply(1:length(e), function(i){
+    e[[i]] |> length()
+  })
+  f <- sapply(1:length(f), function(i){
+    f[[i]] |> length()
+  })
+  
+  matr <- matrix(c(a, b, d, e, f), nrow=5, byrow = TRUE) |> apply(2, unique)
+  remove_columns <- sapply(1:length(matr), function(i){
+                        ifelse(length(matr[[i]]) != 1, i, 0)
+                    })
+  remove_columns <- remove_columns[remove_columns != 0]
+  
+  datasets[[1]] <- datasets[[1]] |> dplyr::select(!remove_columns)
+  datasets[[2]] <- datasets[[2]] |> dplyr::select(!remove_columns)
+  datasets[[3]] <- datasets[[3]] |> dplyr::select(!remove_columns)
+  datasets[[4]] <- datasets[[4]] |> dplyr::select(!remove_columns)
+  datasets[[5]] <- datasets[[5]] |> dplyr::select(!remove_columns)
+  
+  classes <- list(class[splits==1] |> as.numeric(),
+                  class[splits==2] |> as.numeric(),
+                  class[splits==3] |> as.numeric(),
+                  class[splits==4] |> as.numeric(),
+                  class[splits==5] |> as.numeric())
+  bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+  bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+  sapply(1:5, function(i){
+    class1 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-2, 1, 0)) |> 
+      dplyr::pull()
+    class2 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+      dplyr::pull()
+    class3 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+      dplyr::pull()
+    class4 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+      dplyr::pull()
+    class5 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+      dplyr::pull()
+    class6 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+      dplyr::pull()
+    lm1 <- classifier(class1 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    lm2 <- classifier(class2 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    lm3 <- classifier(class3 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    lm4 <- classifier(class4 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    lm5 <- classifier(class5 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    lm6 <- classifier(class6 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    sum(unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+      c(predict(lm1, datasets[[i]][j, ]), predict(lm2, datasets[[i]][j, ]), predict(lm3, datasets[[i]][j, ]),
+      predict(lm4, datasets[[i]][j, ]), predict(lm5, datasets[[i]][j, ]), predict(lm6, datasets[[i]][j, ])) |>
+      which.max()
+      })) %>% replace(.==1, -2) %>%
+        replace(.==2, -1) %>%
+        replace(.==3, 0) %>%
+        replace(.==4, 1) %>%
+        replace(.==5, 2) %>%
+        replace(.==6, 3) == classes[[i]])/length(classes[[i]])
+    }) |> mean()
+}
+```
+
+
+
+
+
+
+```{r}
+five_fold_cv_conf_matrix <- function(dataset, class, classifier){
+  conf <- matrix(0, 6, 6)
+  rownames(conf) <- c(-2, -1, 0, 1, 2, 3)
+  colnames(conf) <- c(-2, -1, 0, 1, 2, 3)
+  splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+  datasets <- list(dataset[splits==1,],
+               dataset[splits==2,],
+               dataset[splits==3,],
+               dataset[splits==4,],
+               dataset[splits==5,])
+  
+  a <- datasets[[1]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  b <- datasets[[2]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  d <- datasets[[3]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  e <- datasets[[4]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  f <- datasets[[5]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  
+  a <- sapply(1:length(a), function(i){
+    a[[i]] |> length()
+  })
+  b <- sapply(1:length(b), function(i){
+    b[[i]] |> length()
+  })
+  d <- sapply(1:length(d), function(i){
+    d[[i]] |> length()
+  })
+  e <- sapply(1:length(e), function(i){
+    e[[i]] |> length()
+  })
+  f <- sapply(1:length(f), function(i){
+    f[[i]] |> length()
+  })
+  
+  matr <- matrix(c(a, b, d, e, f), nrow=5, byrow = TRUE) |> apply(2, unique)
+  remove_columns <- sapply(1:length(matr), function(i){
+                        ifelse(length(matr[[i]]) != 1, i, 0)
+                    })
+  remove_columns <- remove_columns[remove_columns != 0]
+  
+  datasets[[1]] <- datasets[[1]] |> dplyr::select(!remove_columns)
+  datasets[[2]] <- datasets[[2]] |> dplyr::select(!remove_columns)
+  datasets[[3]] <- datasets[[3]] |> dplyr::select(!remove_columns)
+  datasets[[4]] <- datasets[[4]] |> dplyr::select(!remove_columns)
+  datasets[[5]] <- datasets[[5]] |> dplyr::select(!remove_columns)
+  
+  classes <- list(class[splits==1] |> as.numeric(),
+                  class[splits==2] |> as.numeric(),
+                  class[splits==3] |> as.numeric(),
+                  class[splits==4] |> as.numeric(),
+                  class[splits==5] |> as.numeric())
+  bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+  bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+  for (i in 1:5){
+    class1 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-2, 1, 0)) |> 
+      dplyr::pull()
+    class2 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+      dplyr::pull()
+    class3 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+      dplyr::pull()
+    class4 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+      dplyr::pull()
+    class5 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+      dplyr::pull()
+    class6 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+      dplyr::pull()
+    lm1 <- classifier(class1 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm2 <- classifier(class2 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm3 <- classifier(class3 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm4 <- classifier(class4 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm5 <- classifier(class5 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    lm6 <- classifier(class6 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+    predicted <- unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+      c(predict(lm1, datasets[[i]][j, ]), predict(lm2, datasets[[i]][j, ]), predict(lm3, datasets[[i]][j, ]),
+      predict(lm4, datasets[[i]][j, ]), predict(lm5, datasets[[i]][j, ]), predict(lm6, datasets[[i]][j, ])) |> 
+      which.max()
+      })) %>% replace(.==1, -2) %>%
+        replace(.==2, -1) %>%
+        replace(.==3, 0) %>%
+        replace(.==4, 1) %>%
+        replace(.==5, 2) %>%
+        replace(.==6, 3)
+    for (k in 1:length(predicted)){
+      conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] <- conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] + 1
+    }
+    }
+  conf
+}
+```
+
+
+
+
+
+```{r}
+five_fold_cv_logistic_conf_matrix <- function(dataset, class, classifier){
+  splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+  conf <- matrix(0, 6, 6)
+  rownames(conf) <- c(-2, -1, 0, 1, 2, 3)
+  colnames(conf) <- c(-2, -1, 0, 1, 2, 3)
+  datasets <- list(dataset[splits==1,],
+               dataset[splits==2,],
+               dataset[splits==3,],
+               dataset[splits==4,],
+               dataset[splits==5,])
+  
+  a <- datasets[[1]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  b <- datasets[[2]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  d <- datasets[[3]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  e <- datasets[[4]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  f <- datasets[[5]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+  
+  a <- sapply(1:length(a), function(i){
+    a[[i]] |> length()
+  })
+  b <- sapply(1:length(b), function(i){
+    b[[i]] |> length()
+  })
+  d <- sapply(1:length(d), function(i){
+    d[[i]] |> length()
+  })
+  e <- sapply(1:length(e), function(i){
+    e[[i]] |> length()
+  })
+  f <- sapply(1:length(f), function(i){
+    f[[i]] |> length()
+  })
+  
+  matr <- matrix(c(a, b, d, e, f), nrow=5, byrow = TRUE) |> apply(2, unique)
+  remove_columns <- sapply(1:length(matr), function(i){
+                        ifelse(length(matr[[i]]) != 1, i, 0)
+                    })
+  remove_columns <- remove_columns[remove_columns != 0]
+  
+  datasets[[1]] <- datasets[[1]] |> dplyr::select(!remove_columns)
+  datasets[[2]] <- datasets[[2]] |> dplyr::select(!remove_columns)
+  datasets[[3]] <- datasets[[3]] |> dplyr::select(!remove_columns)
+  datasets[[4]] <- datasets[[4]] |> dplyr::select(!remove_columns)
+  datasets[[5]] <- datasets[[5]] |> dplyr::select(!remove_columns)
+  
+  classes <- list(class[splits==1] |> as.numeric(),
+                  class[splits==2] |> as.numeric(),
+                  class[splits==3] |> as.numeric(),
+                  class[splits==4] |> as.numeric(),
+                  class[splits==5] |> as.numeric())
+  bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+  bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+  for (i in 1:5){
+    class1 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-2, 1, 0)) |> 
+      dplyr::pull()
+    class2 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+      dplyr::pull()
+    class3 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+      dplyr::pull()
+    class4 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+      dplyr::pull()
+    class5 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+      dplyr::pull()
+    class6 <- bind_classes[[i]] |> as_tibble() |> 
+      mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+      dplyr::pull()
+    glm1 <- classifier(class1 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    glm2 <- classifier(class2 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    glm3 <- classifier(class3 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    glm4 <- classifier(class4 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    glm5 <- classifier(class5 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    glm6 <- classifier(class6 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)), family = binomial)
+    predicted <- unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+      c(predict(glm1, datasets[[i]][j, ]), predict(glm2, datasets[[i]][j, ]), predict(glm3, datasets[[i]][j, ]),
+      predict(glm4, datasets[[i]][j, ]), predict(glm5, datasets[[i]][j, ]), predict(glm6, datasets[[i]][j, ])) |> 
+      which.max()
+      })) %>% replace(.==1, -2) %>%
+        replace(.==2, -1) %>%
+        replace(.==3, 0) %>%
+        replace(.==4, 1) %>%
+        replace(.==5, 2) %>%
+        replace(.==6, 3)
+    for (k in 1:length(predicted)){
+      conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] <- conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] + 1
+    }
+  }
+  conf
+}
+```
+
+
+```{r}
+rf <- randomForest(class[10:length(class)]~., data=data[10:nrow(data),], ntree=100, mtry=25, importance=TRUE)
+pred.labels <- predict(rf, newdata=data[1:10,], type="class")
+real.labels <- class[1:10]
+(confusion.matrix <- table(pred.labels, real.labels))
+```
+
+```{r}
+rf_5_fold_cv <- function(dataset, class, mtr){
+  splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+  datasets <- list(dataset[splits==1,],
+               dataset[splits==2,],
+               dataset[splits==3,],
+               dataset[splits==4,],
+               dataset[splits==5,])
+  classes <- list(class[splits==1],
+                  class[splits==2],
+                  class[splits==3],
+                  class[splits==4],
+                  class[splits==5])
+  bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+                        rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+  bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+                       c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+  rf1 <- randomForest::randomForest(bind_classes[[1]] ~ ., data=bind_datasets[[1]],
+                                    ntree=100, mtry=mtr, importance=TRUE)
+  rf2 <- randomForest::randomForest(bind_classes[[2]] ~ ., data=bind_datasets[[2]],
+                                    ntree=100, mtry=mtr, importance=TRUE)
+  rf3 <- randomForest::randomForest(bind_classes[[3]] ~ ., data=bind_datasets[[3]],
+                                    ntree=100, mtry=mtr, importance=TRUE)
+  rf4 <- randomForest::randomForest(bind_classes[[4]] ~ ., data=bind_datasets[[4]],
+                                    ntree=100, mtry=mtr, importance=TRUE)
+  rf5 <- randomForest::randomForest(bind_classes[[5]] ~ ., data=bind_datasets[[5]],
+                                    ntree=100, mtry=mtr, importance=TRUE)
+  
+  pred.labels1 <- predict(rf1, newdata=datasets[[1]])
+  pred.labels2 <- predict(rf2, newdata=datasets[[2]])
+  pred.labels3 <- predict(rf3, newdata=datasets[[3]])
+  pred.labels4 <- predict(rf4, newdata=datasets[[4]])
+  pred.labels5 <- predict(rf5, newdata=datasets[[5]])
+  
+  confusion.matrix1 <- table(pred.labels1, classes[[1]])
+  confusion.matrix2 <- table(pred.labels2, classes[[2]])
+  confusion.matrix3 <- table(pred.labels3, classes[[3]])
+  confusion.matrix4 <- table(pred.labels4, classes[[4]])
+  confusion.matrix5 <- table(pred.labels5, classes[[5]])
+  confusion.matrix1 + confusion.matrix2 + confusion.matrix3 + confusion.matrix4 + confusion.matrix5
+}
+```
+
+```{r}
+rf_5_fold_cv(data, class, 5)
+```
+```{r}
+rf <- rf_5_fold_cv(data, class, 5)
+sum(diag(rf))/sum(sum(rf))
+```
+
+```{r}
+in_train <- caret::createDataPartition(y=class, times=1, p=0.85, list=FALSE)
+
+train_set   <- data[in_train,]
+test_set    <- data[-in_train,]
+train_class <- class[in_train]
+test_class  <- class[-in_train]
+```
+
+```{r}
+dummy <- dummyVars(" ~ .", data=train_set)
+newdata <- data.frame(predict(dummy, newdata = train_set))
+train_class[train_class == -2] <- -1
+train_class <- train_class |> droplevels()
+newdata <- newdata |> as_tibble()
+```
+
+
+
+
+```{r}
+five_fold_cv_conf_matrix <- function(dataset, class, classifier){
+conf <- matrix(0, 6, 6)
+rownames(conf) <- c(-2, -1, 0, 1, 2, 3)
+colnames(conf) <- c(-2, -1, 0, 1, 2, 3)
+splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+datasets <- list(dataset[splits==1,],
+dataset[splits==2,],
+dataset[splits==3,],
+dataset[splits==4,],
+dataset[splits==5,])
+
+# a <- datasets[[1]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+# b <- datasets[[2]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+# d <- datasets[[3]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+# e <- datasets[[4]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+# f <- datasets[[5]] |> dplyr::select(where(is.factor)) |> apply(2, unique)
+# 
+# a <- sapply(1:length(a), function(i){
+# a[[i]] |> length()
+# })
+# b <- sapply(1:length(b), function(i){
+# b[[i]] |> length()
+# })
+# d <- sapply(1:length(d), function(i){
+# d[[i]] |> length()
+# })
+# e <- sapply(1:length(e), function(i){
+# e[[i]] |> length()
+# })
+# f <- sapply(1:length(f), function(i){
+# f[[i]] |> length()
+# })
+# 
+# matr <- matrix(c(a, b, d, e, f), nrow=5, byrow = TRUE) |> apply(2, unique)
+# remove_columns <- sapply(1:length(matr), function(i){
+# ifelse(length(matr[[i]]) != 1, i, 0)
+# })
+# remove_columns <- remove_columns[remove_columns != 0]
+# 
+# datasets[[1]] <- datasets[[1]] |> dplyr::select(any_of(remove_columns))
+# datasets[[2]] <- datasets[[2]] |> dplyr::select(any_of(remove_columns))
+# datasets[[3]] <- datasets[[3]] |> dplyr::select(any_of(remove_columns))
+# datasets[[4]] <- datasets[[4]] |> dplyr::select(any_of(remove_columns))
+# datasets[[5]] <- datasets[[5]] |> dplyr::select(any_of(remove_columns))
+# 
+classes <- list(class[splits==1] |> as.numeric(),
+class[splits==2] |> as.numeric(),
+class[splits==3] |> as.numeric(),
+class[splits==4] |> as.numeric(),
+class[splits==5] |> as.numeric())
+bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+for (i in 1:5){
+class1 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==-2, 1, 0)) |> 
+dplyr::pull()
+class2 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+dplyr::pull()
+class3 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+dplyr::pull()
+class4 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+dplyr::pull()
+class5 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+dplyr::pull()
+class6 <- bind_classes[[i]] |> as_tibble() |> 
+mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+dplyr::pull()
+lm1 <- classifier(class1 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+lm2 <- classifier(class2 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+lm3 <- classifier(class3 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+lm4 <- classifier(class4 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+lm5 <- classifier(class5 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+lm6 <- classifier(class6 ~ ., data=bind_datasets[[i]] |> dplyr::select(where(is.numeric)))
+predicted <- unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+c(predict(lm1, datasets[[i]][j, ]), predict(lm2, datasets[[i]][j, ]), predict(lm3, datasets[[i]][j, ]),
+predict(lm4, datasets[[i]][j, ]), predict(lm5, datasets[[i]][j, ]), predict(lm6, datasets[[i]][j, ])) |> 
+which.max()
+})) %>% replace(.==1, -2) %>%
+replace(.==2, -1) %>%
+replace(.==3, 0) %>%
+replace(.==4, 1) %>%
+replace(.==5, 2) %>%
+replace(.==6, 3)
+for (k in 1:length(predicted)){
+conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] <- conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] + 1
+}
+}
+conf
+}
+```
+
+```{r}
+five_fold_cv_conf_matrix(newdata, train_class, lm)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

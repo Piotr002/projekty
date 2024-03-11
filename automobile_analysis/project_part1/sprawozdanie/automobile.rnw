@@ -1,0 +1,1889 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{alltt}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{marvosym}
+\usepackage{mathtools, amsthm, amssymb}
+\usepackage[english]{babel}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{mathpazo}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{geometry}
+\usepackage{dirtytalk}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{caption}
+\usepackage{colortbl}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage[toc,page]{appendix}
+\usepackage{xurl}
+
+
+\newcommand{\RomanNumeralCaps}[1]
+    {\MakeUppercase{\romannumeral #1}}
+
+
+\DeclareMathOperator\erf{erf}
+\newtheorem{definition}{Definition}
+
+\newtheorem{theorem}{Theorem}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+	
+	
+	\begin{titlepage} 
+		\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+		
+		\center 
+		
+		
+		
+		\HRule\\[0.4cm]
+		
+		{\huge\bfseries Project Part \RomanNumeralCaps{1}
+
+			
+			Data Mining}\\[0.4cm] 
+		
+		\HRule\\[1.5cm]
+		
+		
+		\begin{minipage}{0.4\textwidth}
+			\begin{flushleft}
+				\large
+				
+				Julia Kończal
+				
+				Piotr Zieleń 
+			\end{flushleft}
+		\end{minipage}
+		~
+		\begin{minipage}{0.4\textwidth}
+			\begin{flushright}
+				\large
+				group: Wednesday 13.15
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			\end{flushright}
+		\end{minipage}
+		
+		
+		
+		\vfill\vfill\vfill 	\vspace{400px}
+		
+		
+		{\large \today} 
+		
+		\vfill 
+		
+	\end{titlepage}
+	
+	\newpage
+	
+	\newpage
+	
+	\tableofcontents
+	\newpage
+	\section{Introduction}
+
+	
+	\subsection{Our dataset}
+	Our dataset comes from \url{https://archive.ics.uci.edu/dataset/10/automobile}. The data consists of 204 instances and contains 26 features (categorical, integer, real). The automobile dataset under consideration serves as a comprehensive repository of information related to various aspects of the automotive industry. Ranging from vehicle specifications and performance metrics to market trends and historical data, this dataset encapsulates a wealth of information crucial for understanding the dynamics of the automotive sector. Analyzing this dataset can provide valuable insights into factors influencing vehicle design, consumer preferences, and industry trends, making it an invaluable resource for researchers, analysts, and enthusiasts alike.
+	
+	\subsection{Problem description and research questions}
+	
+	The automotive industry generates vast datasets containing information about various vehicle attributes, performance metrics, and safety features. In this project, we aim to explore and analyse an automobile dataset to gain valuable insights into the factors influencing a crucial safety metric known as "symboling." Symboling is a numerical rating assigned to vehicles based on their insurance risk, where negative values indicate safer cars, and positive values suggest higher risk.
+
+The dataset encompasses details such as car specifications, technical aspects, and safety features, providing a comprehensive view of the automotive landscape. Our objective is to perform Exploratory Data Analysis (EDA), handle missing values, and employ standardization techniques. Subsequently, we plan to apply classification methods to predict the symboling of vehicles.
+
+In the project we want to answer the following questions:
+
+\begin{enumerate}
+\item How are the numerical features correlated with each other?
+
+\item Which features exhibit a significant number of missing values, and how should we address them?
+
+\item How well do different classification methods (linear regression, logistic regression, decision tree, random forest, QDA, LDA, SVM) perform in predicting the symboling feature?
+\item What are the most important features for predicting the symboling of an automobile?
+
+
+
+\item Which classification algorithm yields the most accurate predictions for symboling based on the automobile dataset?
+
+
+\end{enumerate}
+	
+	\subsection{Methods and algorithms used in the project}
+	We utilized R programming language for the implementation of this project. The libraries and versions that we used are: dplyr (1.1.2), mice (3.16.0), kableExtra (1.3.4), naniar(1.0.0), VIM (6.2.2), ggplot2 (3.4.3), gridExtra (2.3), ie2misc (0.9.1), EnvStats (2.8.1), corrplot (0.92), ggpubr (0.6.0), knitr (1.43), patchwork (1.1.3), caret (6.0-94), tidyr (1.3.0), arules (1.7-7), MASS (7.3-60), janitor (2.2.0), class (7.3-22), rpart (4.1.19), rpart.plot (3.1.1), rattle (5.5.1), e1081 (1.7-13).
+
+
+	
+	The methods that we utilized during preparation of the project:
+	\begin{itemize}
+	\item k--Nearest Neighbors (k-NN) imputation method -- a technique used to estimate missing values in a dataset based on the values of their nearest neighbors. It is a non--parametric method that relies on the assumption that similar instances in the dataset should have similar values for a given variable. The k--NN imputation method can be applied to both numerical and categorical data.
+	\item  standardization of data -- also known as Z--score normalization or Z--score standardization, is a common preprocessing technique in statistics and machine learning. The goal of standardization is to transform the features of a dataset to have a mean of 0 and a standard deviation of 1. This process makes the features comparable and ensures that they are on a similar scale, which is particularly important for algorithms that are sensitive to the scale of input features, such as many machine learning algorithms.
+
+		\item Linear regression -- is primarily used for regression tasks, where the goal is to predict a continuous outcome variable based on one or more predictor variables. However, there is a common misconception that linear regression can be adapted for classification tasks. While it is technically possible, there are significant limitations and drawbacks to using linear regression for classification. 
+		
+	\item Logistic regression -- is a widely used statistical method and a fundamental algorithm in machine learning, particularly for binary classification tasks. It models the probability of a binary outcome as a function of one or more predictor variables. Despite its name, logistic regression is used for classification rather than regression. The logistic regression model predicts the probability that a given instance belongs to a particular category. The logistic function (sigmoid function) is used to map the linear combination of input features to a range between 0 and 1. This output is interpreted as the probability of the instance belonging to the positive class.
+	
+	\item K--Nearest Neighbors (KNN) -- an algorithm that classifies a data point based on the majority class of its $k$ nearest neighbors in the feature space. 
+	
+	\item Linear Discriminant Analysis (LDA) -- a supervised machine learning algorithm used for dimensionality reduction and classification. It is particularly useful when working with multi-class classification problems. LDA seeks to find a linear combination of features that characterizes or separates two or more classes in the dataset. The primary goal of LDA is to maximize the separation between different classes while minimizing the spread within each class.
+	
+	\item Quadratic Discriminant Analysis (QDA) -- a supervised machine learning algorithm used for classification. It is closely related to Linear Discriminant Analysis (LDA), but unlike LDA, QDA does not assume equal covariance matrices among classes. Instead, it allows each class to have its own covariance matrix. The main goal of QDA is to model the distribution of features for each class and use these distributions to classify new data points.
+	
+	\item Classification tree -- a supervised machine learning algorithm used for both classification and regression tasks. It works by recursively splitting the dataset into subsets based on the most significant attribute at each node of the tree. The goal is to create a model that predicts the target variable's class (or value for regression) by making decisions based on input features.
+	
+	\item Random forest -- an ensemble learning algorithm used for both classification and regression tasks. It operates by constructing a multitude of decision trees during training and outputs the mode (for classification) or average prediction (for regression) of the individual trees as the final prediction. Random Forests mitigate the overfitting issues associated with individual decision trees and generally offer improved performance and robustness.
+	
+	\item Support Vector Machines (SVM) -- a supervised machine learning algorithm used for classification and regression tasks. SVM is particularly well--suited for problems with complex decision boundaries and high-dimensional feature spaces. The algorithm works by finding the hyperplane that best separates data points of different classes. The primary goal of SVM is to find a hyperplane that maximally separates data points belonging to different classes in the feature space. In a binary classification scenario (two classes), the hyperplane is a decision boundary that separates the data points. For higher dimensions, this becomes a hyperplane.
+Support vectors are the data points that lie closest to the decision boundary. They are crucial in determining the optimal hyperplane. The margin is the distance between the hyperplane and the nearest data point from either class. SVM aims to maximize this margin to achieve better generalization.
+SVM can handle non--linear decision boundaries through the use of a kernel function. Common kernel functions include linear, polynomial, radial basis function (RBF), and sigmoid. The regularization parameter $C$ in SVM controls the trade--off between achieving a smooth decision boundary and classifying training points correctly. A smaller $C$ value allows for a more flexible decision boundary but may lead to overfitting. SVM can be extended for multi--class classification using techniques like one--vs--one or one--vs--all.
+	
+	\item One--hot encoding -- a technique used in machine learning and data preprocessing to represent categorical variables as binary vectors. It is particularly useful when working with algorithms that require numerical input, as it transforms categorical data into a format that can be easily processed and interpreted by machine learning models. For each unique category in a categorical variable, it creates a new binary (0 or 1) column. Each binary column corresponds to one category. In each binary column, assign a value of 1 if the observation belongs to the corresponding category and 0 otherwise. This creates a sparse matrix where only one element in each row is 1, indicating the presence of that category.
+
+\item Cross--validation -- a resampling technique used in machine learning to assess the performance and generalizability of a predictive model. It helps to mitigate the risk of overfitting or underfitting by using different subsets of the dataset for training and testing. The basic idea is to split the dataset into multiple folds, train the model on a subset of the folds, and then validate it on the remaining folds. The most common form of cross-validation is K--Fold Cross--Validation. In this approach, the dataset is divided into $K$ equally sized folds or subsets.
+The model is trained $K$ times, each time using $K-1$ folds for training and the remaining fold for testing. This process is repeated until each fold has been used as a testing set exactly once. After each training and testing iteration, a performance metric (e.g., accuracy, mean squared error) is computed. The average performance across all iterations provides an overall assessment of the model's performance. It provides a more robust estimate of model performance compared to a single train-test split. It helps identify models that are overfitting or underfitting to the training data and utilizes the entire dataset for both training and testing, maximizing data usage.
+
+
+\item one--vs--all / one--vs--rest -- a strategy used in multiclass classification problems where the goal is to assign each instance to one of multiple classes. In this strategy, a binary classifier is trained for each class, treating that class as the positive class while treating all other classes as the negative class. The process is repeated for each class in the dataset.
+
+
+	
+	\end{itemize}
+	
+	
+	\section{Exploratory data analysis}
+	
+	\subsection{Features description}
+	
+	Firstly, let's take a look at all the features and their values:
+	
+	\begin{enumerate}
+  \item symboling -- represents the risk level or insurance risk rating assigned to a particular vehicle model. The values assigned to "symboling" are often integers, with negative values indicating a lower risk and positive values indicating a higher risk, values: -2, -1, 0, 1, 2, 3.
+  \item normalized\_losses -- a metric that measures the normalized losses incurred by insurance companies for a particular make and model of a vehicle, values: continuous from 65 to 256,
+ 
+	 \item make -- brand of the vehicle, values: alfa-romero, audi, bmw, chevrolet, dodge, honda, isuzu, jaguar, mazda, mercedes-benz, mercury, mitsubishi, nissan, peugot, plymouth, porsche, renault, saab, subaru, toyota, volkswagen, volvo,
+
+  \item  fuel\_type -- type of fuel used to power the vehicle's engine, values: diesel, gas,
+  \item  aspiration --  the method used to introduce air into the engine's combustion chamber, values: std, turbo,
+  \item num\_of\_doors -- number of doors of the vehicle, values: four, two,
+  \item body\_style -- the overall shape of the vehicle's body, values: hardtop, wagon, sedan, hatchback, convertible,
+  
+  
+  \item drive\_wheels -- the type of wheel configuration that propels the vehicle. Meaning of the values:
+  \begin{itemize}
+  \item 4WD (Four-Wheel Drive) -- in a 4WD system, power is delivered to all four wheels simultaneously. This configuration is often associated with off-road vehicles and trucks. Some 4WD systems allow the driver to switch between two-wheel drive and four-wheel drive based on driving conditions,
+
+\item FWD (Front-Wheel Drive) -- in a FWD system, the engine's power is transmitted to the front wheels. This configuration is common in many compact cars and provides advantages such as improved traction during acceleration and generally better fuel efficiency,
+
+\item RWD (Rear-Wheel Drive) -- in a RWD system, the engine's power is sent to the rear wheels. This configuration is often found in performance-oriented and larger vehicles. RWD can contribute to better balance and handling, especially in high-performance and sports cars,
+  
+  \end{itemize}
+  values: 4wd, fwd, rwd,
+  \item engine\_location -- position of the vehicle's engine within the chassis, values: front, rear,
+ \item wheel\_base --  the distance between the centers of the front and rear wheels on the same side of the vehicle, values: continuous from 86.6 120.9,
+ \item length -- length of the vehicle, values: continuous from 141.1 to 208.1,
+ \item width -- width of the vehicle, values: continuous from 60.3 to 72.3,
+ \item height -- height of the vehicle, values:  continuous from 47.8 to 59.8,
+ \item curb\_weight -- the total weight of a vehicle when it is at rest and ready for operation, values: continuous from 1488 to 4066,
+ \item engine\_type -- configuration or type of engine used in a vehicle. Meaning of the values:
+ \begin{itemize}
+ \item DOHC (Double Overhead Camshaft) -- this engine type has two camshafts in the cylinder head—one for the intake valves and one for the exhaust valves. It allows for precise control over valve timing and often results in improved performance,
+
+\item DOHCV (Double Overhead Camshaft with Variable Valve Timing) -- this is similar to DOHC but includes a variable valve timing mechanism. Variable valve timing adjusts the timing of the opening and closing of the engine's valves, optimizing performance and efficiency across different RPM ranges,
+
+\item L (Longitudinal) -- this typically refers to an engine configuration where the engine is positioned lengthwise in the vehicle, parallel to the vehicle's length,
+
+\item OHC (Overhead Camshaft) -- this engine type has a single camshaft in the cylinder head, controlling both the intake and exhaust valves. It is an improvement over older OHV (Overhead Valve) designs,
+
+\item OHCF (Overhead Camshaft, Hemispherical Combustion Chamber, Flat-Head) -- this designation suggests a combination of features, including an overhead camshaft and a hemispherical combustion chamber. The term "flat-head" might refer to an older engine design,
+
+\item OHCV (Overhead Camshaft, V-Type) -- this indicates an engine with an overhead camshaft design and a V-shaped cylinder configuration,
+
+\item Rotor -- this likely refers to a rotary engine, also known as a Wankel engine. Rotary engines use a rotor instead of pistons for the combustion process.
+ \end{itemize}
+ values: dohc, dohcv, l, ohc, ohcf, ohcv, rotor,
+ \item num\_of\_cylinders -- total number of cylinders in the engine, values: eight, five, four, six, three, twelve, two,
+ \item engine\_size -- the total volume inside the engine's cylinders, values:  continuous from 61 to 326,
+ 
+ \item fuel\_system -- the type of fuel delivery system employed by the vehicle. Meaning of the values: 
+ 
+ \begin{itemize}
+ \item 1bbl (Single Barrel Carburetor) -- this indicates a carburetor with a single barrel for mixing air and fuel. Older vehicles often used 1bbl carburetors,
+
+\item 2bbl (Two Barrel Carburetor) -- similar to 1bbl, but with two barrels. It allows for a more precise control of the air-fuel mixture, improving efficiency,
+
+\item 4bbl (Four Barrel Carburetor) -- a carburetor with four barrels, providing even more precise control over the air-fuel mixture. Typically found in performance-oriented or larger engines,
+
+\item IDI (Indirect Injection) -- this refers to an indirect injection diesel engine, where fuel is injected into a pre-combustion chamber. Common in older diesel engines,
+
+\item MFI (Multi-Point Fuel Injection) -- each cylinder has its fuel injector, allowing for precise control over the fuel delivery to each cylinder,
+
+\item MPFI (Multi-Port Fuel Injection) -- similar to MFI, but injectors are located in the intake ports, providing even better control over the fuel-air mixture,
+
+\item SPDI (Single-Point Direct Injection) -- found in some early fuel-injected systems, where fuel is injected at a single point in the intake manifold,
+
+\item SPFI (Single-Point Fuel Injection) -- similar to SPDI, but in this case, fuel is injected at a single point in the throttle body,
+
+\end{itemize} 
+values: 1bbl, 2bbl, 4bbl, idi, mfi, mpfi, spdi, spfi,
+ 
+ \item bore --  diameter of the engine's cylinders. The bore, together with the stroke (the distance the piston travels inside the cylinder), is a fundamental dimension that determines the engine's displacement, values: continuous from 2.54 to 3.94,
+ 
+ \item stroke --  piston stroke length within the engine. The piston stroke is the distance the piston travels inside the cylinder, moving from top dead center (TDC) to bottom dead center (BDC) or vice versa, values: continuous from 2.07 to 4.17,
+ 
+ \item compression\_ratio -- the ratio of the maximum volume to the minimum volume within the engine's combustion chamber. It is a crucial parameter that measures the degree of compression applied to the air-fuel mixture before ignition. A higher compression ratio typically indicates a more efficient and powerful engine, as it allows for better utilization of fuel energy, values: continuous from 7 to 23,
+ 
+ \item horsepower -- the engine's power output, values: continuous from 48 to 288,
+ 
+ \item peak\_rpm -- the engine speed at which the highest revolutions per minute (rpm) occur. This metric is a key indicator of the maximum rotational speed that the car's engine can reach under optimal conditions, values: continuous from 4150 to 6600,
+ 
+ \item city\_mpg -- the miles per gallon (mpg) metric, focusing on the vehicle's fuel efficiency in urban or city driving conditions. A higher city\_mpg value indicates increased fuel efficiency, signifying that the car can travel a greater distance per gallon of fuel within city limits., values: continuous from 13 to 49,
+ 
+ \item highway\_mpg -- the miles per gallon (mpg) measurement, specifically indicating the vehicle's fuel efficiency on the highway. A higher highway\_mpg value suggests greater fuel efficiency, indicating that the car can cover a longer distance per gallon of fuel, values: continuous from 16 to 54,
+ 
+ \item price -- price of the car, values: continuous from 5118 to 45400.
+	\end{enumerate}
+	
+	
+	<<warning=FALSE, message=FALSE, echo=FALSE>>=
+	library(dplyr)
+	library(mice)
+	library(kableExtra)
+	library(naniar)
+	library(VIM)
+	library(ggplot2)
+	library(gridExtra)
+	library(ie2misc)
+	library(EnvStats)
+	library(corrplot)
+	library("ggpubr")
+	library(knitr)
+	library(patchwork)
+	library(caret)
+	library(tidyr)
+	library(arules)
+	library(MASS)
+	library(janitor)
+	library(class)
+	library(rpart)
+  library(rpart.plot)
+	library(rattle)
+	library(e1071)
+	
+	set.seed(1234)
+	@
+	
+
+	
+	<<echo=FALSE>>=
+	automobile <- read.csv("../imports-85.data", sep=",")
+	colnames(automobile) <- c("symboling", "normalized_losses", "make", "fuel_type",
+	"aspiration", "num_of_doors", "body_style", "drive_wheels",
+	"engine_location", "wheel_base", "length", "width",
+	"height", "curb_weight", "engine_type",
+	"num_of_cylinders", "engine_size", "fuel_system",
+	"bore", "stroke", "compression_ratio", "horsepower",
+	"peak_rpm", "city_mpg", "highway_mpg", "price")
+	@
+	
+	<< echo=FALSE, results='hide'>>=
+	automobile |>
+	  dplyr::select(1,2,3,4,5) |>
+	  head(10) |>
+	  kableExtra::kable("latex") |> 
+	  kableExtra::kable_styling(latex_options = "striped")
+	automobile |>
+	  dplyr::select(6,7,8,9,10) |>
+	  head(10) |>
+	  kableExtra::kable("latex") |> 
+	  kableExtra::kable_styling(latex_options = "striped")
+	automobile |>
+	  dplyr::select(11,12,13,14,15) |>
+	  head(10) |>
+   	  kableExtra::kable("latex") |> 
+	  kableExtra::kable_styling(latex_options = "striped")
+	automobile |>
+	  dplyr::select(16,17,18,19,20) |>
+	  head(10) |>
+	  kableExtra::kable("latex") |> 
+	  kableExtra::kable_styling(latex_options = "striped")
+	automobile |>
+	  dplyr::select(21,22,23,24,25) |>
+	  head(10) |>
+	  kableExtra::kable("latex") |> 
+	  kableExtra::kable_styling(latex_options = "striped")
+	@
+
+Before proceeding with the data analysis, we will replace characters indicating missing values with the NA type built into R for more convenient analysis. Currently, missing values in our dataset are represented by question marks.
+	<<echo= FALSE, warning = FALSE>>=
+	automobile <- automobile |>
+	naniar::replace_with_na_all(condition=~.x %in% c("?"))
+	@ 
+	
+	<<warning = FALSE, echo=FALSE>>=
+	automobile <- automobile |> 
+	dplyr::mutate(symboling=as.factor(symboling),
+	normalized_losses=as.numeric(normalized_losses),
+	make=as.factor(make),
+	fuel_type=as.factor(fuel_type),
+	aspiration=as.factor(aspiration),
+	num_of_doors=as.factor(num_of_doors),
+	body_style=as.factor(body_style),
+	drive_wheels=as.factor(drive_wheels),
+	engine_location=as.factor(engine_location),
+	wheel_base=as.numeric(wheel_base),
+	length=as.numeric(length),
+	width=as.numeric(width),
+	height=as.numeric(height),
+	curb_weight=as.numeric(curb_weight),
+	engine_type=as.factor(engine_type),
+	num_of_cylinders=as.factor(num_of_cylinders),
+	engine_size=as.numeric(engine_size),
+	fuel_system=as.factor(fuel_system),
+	bore=as.numeric(bore),
+	stroke=as.numeric(stroke),
+	compression_ratio=as.numeric(compression_ratio),
+	horsepower=as.numeric(horsepower),
+	peak_rpm=as.numeric(peak_rpm),
+	city_mpg=as.numeric(city_mpg),
+	highway_mpg=as.numeric(highway_mpg),
+	price=as.numeric(price))
+	@
+	Let us present the charts, which describe distributions of our features for better recognition and overview of the possible adopted values --- let's see boxplots for quantitative and barplots for qualitative values.
+	<<echo=FALSE>>=
+	automobile_quantitative <- automobile |> 
+	dplyr::select(where(is.numeric))
+	automobile_qualitative <- automobile |> 
+	dplyr::select(where(is.factor))
+	@
+	
+	<<barplots_categorical_features, fig.cap="Distribution of all qualitative features in automobile dataset", echo=FALSE, warning = FALSE, message = FALSE>>=
+	df_long1 <- tidyr::gather(automobile_qualitative, key = "variable", value = "value")
+	
+	ggplot(df_long1, aes(x = value)) +
+	geom_bar(aes(x=value)) +
+	facet_wrap(~variable, scales = "free") +
+	ggtitle("Distribution Plots")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+	@
+	
+	<<hisrograms_numeric_features, fig.cap="Distribution of all quantitative features in automobile dataset", echo=FALSE, warning = FALSE, message = FALSE>>=
+	df_long2 <- tidyr::gather(automobile_quantitative, key = "variable", value = "value")
+	
+	ggplot(df_long2, aes(x = value)) +
+	geom_histogram(aes(x=value, y=after_stat(density))) +
+	geom_density() +
+	facet_wrap(~variable, scales = "free") +
+	ggtitle("Distribution Plots")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+	@
+	
+	Figures \ref{fig:barplots_categorical_features} and \ref{fig:hisrograms_numeric_features} show us distributions of categorical and numerical features respectively. In the figure \ref{fig:barplots_categorical_features} we can see the barplots with possibly variables, which the features can take and in the figure \ref{fig:hisrograms_numeric_features} we can see normalized histograms with marked curves, which indicate the kernel density of features.
+	
+	It is also worth noticing how quantitative features describe the predicted class.
+	<<quantitative_symboling, fig.cap="Boxplots of description symboling by quantitative features", echo=FALSE, warning = FALSE>>=
+	df_long_quantitative_symboling <- gather(automobile |> 
+	dplyr::select(where(is.numeric)), key = "Feature", value = "Value")
+	df_long_quantitative_symboling <- df_long_quantitative_symboling |> 
+	dplyr::mutate(symboling=rep(automobile$symboling, automobile |> 
+	dplyr::select(where(is.numeric)) |> ncol()))
+	
+	ggplot(df_long_quantitative_symboling) +
+	geom_boxplot(aes(x=symboling, y=Value)) +
+	facet_wrap(~Feature, scales="free")
+	@
+	
+	In the figure \ref{fig:quantitative_symboling} we can see that for all features there are is no such a situation, that boxplots are separable. One boxplot can be almost isolated for rare features, like for example variable "-2" for "bore", but in general this approach doesn't provide much information about the predicted value
+	
+	\subsection{Dealing with missing values}
+	
+	Let's see the distribution on missing values in our data. Because of many features, we temporarily remove columns with no missing values to better visualize the distribution:
+	
+	<<missing_value_distribution, warning = FALSE, echo=FALSE>>=
+	mice::md.pattern(automobile |> dplyr::select_if(~ any(is.na(.))),
+	rotate.names = TRUE, plot=FALSE) |>
+	knitr::kable(caption="Distribution of missing values in the dataset")
+	@
+	Above tabular \ref{tab:missing_value_distribution} shows us pattern of missing values --- the numbers (0, 1) under columns show if there is a missing value of not (1 means not missing, 0 --- missing). The values in the first column show how many records have such a pattern of missing values, for instance 159 records have no missing data. Values in the bottom row describe total sum of missing values of considered column. Numbers in the last column provide number of missing values per pattern. The value in the last row and column provides the total number of missing data in our dataset.
+	
+	We can see that in our dataset there are \Sexpr{automobile |> is.na() |> sum()} missing values, of these \Sexpr{automobile$normalized_losses |> is.na() |> sum()} occur in the "normalized\_losses" variable. Our dataset is consists of 205 records, so it could be not a good idea to remove all records in which there is at least one missing values, because of this we would loss a lot of information, so we conclude to replace all the missing values by "knn imput" method. 
+	
+	<<echo=FALSE>>=
+	automobile$normalized_losses |> 
+	is.na() |> 
+	sum()
+	@
+	
+	<<echo=FALSE>>=
+	automobile <- automobile |> 
+	VIM::kNN(imp_var=FALSE)
+	@
+	
+	\subsection{Descriptive analysis}
+	
+
+			\begin{table}[ht]
+			
+			%\begin{flushleft}
+			\centering
+			
+			\caption{Values of statistics  for each quantitative column in the dataset.} % title of Table	
+			\begin{tabular}{|c |c |c| c | c| c|c| c |} % centered columns (4 columns)
+				
+				\hline %inserts double horizontal lines
+				 & mean & median & IQR & var & sd & madstat & cv\\ [0.5ex] % inserts table
+				%heading
+    \hline
+    
+    
+				
+        	normalized\_losses & \Sexpr{signif(mean(automobile$normalized_losses), 3)}  & \Sexpr{signif(median(automobile$normalized_losses), 3)} & \Sexpr{signif(IQR(automobile$normalized_losses), 3)} & \Sexpr{signif(var(automobile$normalized_losses), 3)}& \Sexpr{signif(sd(automobile$normalized_losses), 3)} & \Sexpr{signif(madstat(automobile$normalized_losses), 3)} & \Sexpr{signif(sd(automobile$normalized_losses) / mean(automobile$normalized_losses) * 100, 3)}\\ \hline 
+        	
+				wheel\_base & \Sexpr{signif(mean(automobile$wheel_base), 3)}  & \Sexpr{signif(median(automobile$wheel_base), 3)} & \Sexpr{signif(IQR(automobile$wheel_base), 3)}
+& \Sexpr{signif(var(automobile$wheel_base), 3)}& \Sexpr{signif(sd(automobile$wheel_base), 3)}& \Sexpr{signif(madstat(automobile$wheel_base), 3)} & \Sexpr{signif(sd(automobile$wheel_base) / mean(automobile$wheel_base) * 100, 3)}\\ \hline
+
+				length & \Sexpr{signif(mean(automobile$length), 3)}&  \Sexpr{signif(median(automobile$length), 3)} & \Sexpr{signif(IQR(automobile$length), 3)} &\Sexpr{signif(var(automobile$length), 3)}&\Sexpr{signif(sd(automobile$length), 3)}& \Sexpr{signif(madstat(automobile$length), 3)} & \Sexpr{signif(sd(automobile$length) / mean(automobile$length) * 100, 3)}\\ \hline
+				
+				width & \Sexpr{signif(mean(automobile$width), 3)} & \Sexpr{signif(median(automobile$width), 3)} & \Sexpr{signif(IQR(automobile$width), 3)}&\Sexpr{signif(var(automobile$width), 3)}& \Sexpr{signif(sd(automobile$width), 3)}& \Sexpr{signif(madstat(automobile$width), 3)} & \Sexpr{signif(sd(automobile$width) / mean(automobile$width) * 100, 3)} \\ \hline
+				
+				height & \Sexpr{signif(mean(automobile$height), 3)} & \Sexpr{signif(median(automobile$height), 3)} & \Sexpr{signif(IQR(automobile$height), 3)} &\Sexpr{signif(var(automobile$height), 3)}&\Sexpr{signif(sd(automobile$height), 3)} &\Sexpr{signif(madstat(automobile$height), 3)} & \Sexpr{signif(sd(automobile$height) / mean(automobile$height) * 100, 3)}\\ \hline
+				
+				curb\_weight & \Sexpr{signif(mean(automobile$curb_weight), 3)} & \Sexpr{signif(median(automobile$curb_weight), 3)} & \Sexpr{signif(IQR(automobile$curb_weight), 3)} &\Sexpr{signif(var(automobile$curb_weight), 3)}&\Sexpr{signif(sd(automobile$curb_weight), 3)} & \Sexpr{signif(madstat(automobile$curb_weight), 3)} & \Sexpr{signif(sd(automobile$curb_weight) / mean(automobile$curb_weight) * 100, 3)}\\ \hline
+				
+					engine\_size & \Sexpr{signif(mean(automobile$engine_size), 3)} &  \Sexpr{signif(median(automobile$engine_size), 3)}&  \Sexpr{signif(IQR(automobile$engine_size), 3)} &\Sexpr{signif(var(automobile$engine_size), 3)}& \Sexpr{signif(sd(automobile$engine_size), 3)}& \Sexpr{signif(madstat(automobile$engine_size), 3)} & \Sexpr{signif(sd(automobile$engine_size) / mean(automobile$engine_size) * 100, 3)}\\ \hline
+					
+						bore & \Sexpr{signif(mean(automobile$bore), 3)} & \Sexpr{signif(median(automobile$bore), 3)}& \Sexpr{signif(IQR(automobile$bore), 3)}&\Sexpr{signif(var(automobile$bore), 3)}& \Sexpr{signif(sd(automobile$bore), 3)}& \Sexpr{signif(madstat(automobile$bore), 3)} & \Sexpr{signif(sd(automobile$bore) / mean(automobile$bore) * 100, 3)}\\ \hline
+						
+							stroke & \Sexpr{signif(mean(automobile$stroke), 3)} &\Sexpr{signif(median(automobile$stroke), 3)}& \Sexpr{signif(IQR(automobile$stroke), 3)}&\Sexpr{signif(var(automobile$stroke), 3)}& \Sexpr{signif(sd(automobile$stroke), 3)}& \Sexpr{signif(madstat(automobile$stroke), 3)} & \Sexpr{signif(sd(automobile$stroke) / mean(automobile$stroke) * 100, 3)}\\ \hline
+							
+								compression\_ratio & \Sexpr{signif(mean(automobile$compression_ratio), 3)} & \Sexpr{signif(median(automobile$compression_ratio), 3)} &\Sexpr{signif(IQR(automobile$compression_ratio), 3)}&\Sexpr{signif(var(automobile$compression_ratio), 3)}& \Sexpr{signif(sd(automobile$compression_ratio), 3)}& \Sexpr{signif(madstat(automobile$compression_ratio), 3)} & \Sexpr{signif(sd(automobile$compression_ratio) / mean(automobile$compression_ratio) * 100, 3)}\\ \hline
+								
+									horsepower &\Sexpr{signif(mean(automobile$peak_rpm), 3)} & \Sexpr{signif(median(automobile$peak_rpm), 3)} & \Sexpr{signif(IQR(automobile$peak_rpm), 3)}&\Sexpr{signif(var(automobile$horsepower), 3)}& \Sexpr{signif(sd(automobile$horsepower), 3)}& \Sexpr{signif(madstat(automobile$horsepower), 3)} & \Sexpr{signif(sd(automobile$horsepower) / mean(automobile$horsepower) * 100, 3)}\\ \hline
+									
+										peak\_rpm & \Sexpr{signif(mean(automobile$peak_rpm), 3)}& \Sexpr{signif(median(automobile$peak_rpm), 3)}&  \Sexpr{signif(IQR(automobile$peak_rpm), 3)} &\Sexpr{signif(var(automobile$peak_rpm), 3)}& \Sexpr{signif(sd(automobile$peak_rpm), 3)}& \Sexpr{signif(madstat(automobile$peak_rpm), 3)} & \Sexpr{signif(sd(automobile$peak_rpm) / mean(automobile$peak_rpm) * 100, 3)}\\ \hline
+										
+											city\_mpg &\Sexpr{signif(mean(automobile$city_mpg), 3)} & \Sexpr{signif(median(automobile$city_mpg), 3)}& \Sexpr{signif(IQR(automobile$city_mpg), 3)}&\Sexpr{signif(var(automobile$city_mpg), 3)} \Sexpr{signif(sd(automobile$city_mpg), 3)}&\Sexpr{signif(sd(automobile$city_mpg), 3)}& \Sexpr{signif(madstat(automobile$city_mpg), 3)} & \Sexpr{signif(sd(automobile$city_mpg) / mean(automobile$city_mpg) * 100, 3)}\\ \hline
+											
+												highway\_mpg & \Sexpr{signif(mean(automobile$highway_mpg), 3)} & \Sexpr{signif(median(automobile$highway_mpg), 3)} &  \Sexpr{signif(IQR(automobile$highway_mpg), 3)}&\Sexpr{signif(var(automobile$highway_mpg), 3)}& \Sexpr{signif(sd(automobile$highway_mpg), 3)}& \Sexpr{signif(madstat(automobile$highway_mpg), 3)} & \Sexpr{signif(sd(automobile$highway_mpg) / mean(automobile$highway_mpg) * 100, 3)}\\ \hline
+												
+													price &\Sexpr{signif(mean(automobile$price), 3)} &\Sexpr{signif(median(automobile$price), 3)} & \Sexpr{signif(IQR(automobile$price), 3)}
+&\Sexpr{signif(var(automobile$price),3)}& \Sexpr{signif(sd(automobile$price), 3)}&\Sexpr{signif(madstat(automobile$price), 3)} & \Sexpr{signif(sd(automobile$price) / mean(automobile$price) * 100, 3)}\\ \hline
+		
+
+			\end{tabular}
+			\label{table:statistics1} 
+		\end{table}
+		
+		
+		
+			\begin{table}[ht]
+			
+			%\begin{flushleft}
+			\centering
+			
+			\caption{Values of statistics  for each quantitative column in the dataset.} % title of Table	
+			\begin{tabular}{|c |c |c| c | c| c|c| c |} % centered columns (4 columns)
+				
+				\hline %inserts double horizontal lines
+				 & Q1 & Q3 & skew. & kurtosis & min & max\\ [0.5ex] % inserts table
+				%heading
+    \hline
+    
+    
+				
+        	normalized\_losses & \Sexpr{signif(quantile(automobile$normalized_losses, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$normalized_losses, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$normalized_losses), 3)}& \Sexpr{signif(kurtosis(automobile$normalized_losses), 3)} & \Sexpr{signif(min(automobile$normalized_losses), 3)} & \Sexpr{signif(max(automobile$normalized_losses), 3)}\\ \hline 
+        	
+	 	wheel\_base & \Sexpr{signif(quantile(automobile$wheel_base , probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$wheel_base , probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$wheel_base ), 3)}& \Sexpr{signif(kurtosis(automobile$wheel_base ), 3)} & \Sexpr{signif(min(automobile$wheel_base ), 3)} & \Sexpr{signif(max(automobile$wheel_base), 3)}\\ \hline 
+	 	
+	 	 length & \Sexpr{signif(quantile(automobile$length, probs = c( 0.25))[[1]], 3)}  & \Sexpr{signif(quantile(automobile$length, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$length), 3)}& \Sexpr{signif(kurtosis(automobile$length), 3)} & \Sexpr{signif(min(automobile$length), 3)} & \Sexpr{signif(max(automobile$length), 3)}\\ \hline 
+	 	 	
+	 	 	 	width & \Sexpr{signif(quantile(automobile$width, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$width, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$width), 3)}& \Sexpr{signif(kurtosis(automobile$width), 3)} & \Sexpr{signif(min(automobile$width), 3)} & \Sexpr{signif(max(automobile$width), 3)}\\ \hline 
+	 	 	 	
+	 	 	 	
+	 	 	 	 	height & \Sexpr{signif(quantile(automobile$height, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$height, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$height), 3)}& \Sexpr{signif(kurtosis(automobile$height), 3)} & \Sexpr{signif(min(automobile$height), 3)} & \Sexpr{signif(max(automobile$height), 3)}\\ \hline 
+	 	 	 	 	
+	 	 	 	 	
+	 	 	 	 	 	curb\_weight & \Sexpr{signif(quantile(automobile$curb_weight, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$curb_weight, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$curb_weight), 3)}& \Sexpr{signif(kurtosis(automobile$curb_weight), 3)} & \Sexpr{signif(min(automobile$curb_weight), 3)} & \Sexpr{signif(max(automobile$curb_weight), 3)}\\ \hline 
+	 	 	 	 	 	
+	 	 	 	 	 	
+	 	 	 	 	 	 	engine\_size & \Sexpr{signif(quantile(automobile$engine_size, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$engine_size, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$engine_size), 3)}& \Sexpr{signif(kurtosis(automobile$engine_size), 3)} & \Sexpr{signif(min(automobile$engine_size), 3)} & \Sexpr{signif(max(automobile$engine_size), 3)}\\ \hline 
+	 	 	 	 	 	 	
+	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	bore & \Sexpr{signif(quantile(automobile$bore, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$bore, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$bore), 3)}& \Sexpr{signif(kurtosis(automobile$bore), 3)} & \Sexpr{signif(min(automobile$bore), 3)} & \Sexpr{signif(max(automobile$bore), 3)}\\ \hline 
+	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 stroke & \Sexpr{signif(quantile(automobile$stroke, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$stroke, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$stroke), 3)}& \Sexpr{signif(kurtosis(automobile$stroke), 3)} & \Sexpr{signif(min(automobile$stroke), 3)} & \Sexpr{signif(max(automobile$stroke), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	compression\_ratio & \Sexpr{signif(quantile(automobile$compression_ratio, probs = c( 0.25))[[1]], 3)}   & \Sexpr{signif(quantile(automobile$compression_ratio, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$compression_ratio), 3)}& \Sexpr{signif(kurtosis(automobile$compression_ratio), 3)} & \Sexpr{signif(min(automobile$compression_ratio), 3)} & \Sexpr{signif(max(automobile$compression_ratio), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	horsepower & \Sexpr{signif(quantile(automobile$horsepower, probs = c( 0.25))[[1]], 3)}  & \Sexpr{signif(quantile(automobile$horsepower, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$horsepower), 3)}& \Sexpr{signif(kurtosis(automobile$horsepower), 3)} & \Sexpr{signif(min(automobile$horsepower), 3)} & \Sexpr{signif(max(automobile$horsepower), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	peak\_rpm & \Sexpr{signif(quantile(automobile$peak_rpm, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$peak_rpm, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$peak_rpm), 3)}& \Sexpr{signif(kurtosis(automobile$peak_rpm), 3)} & \Sexpr{signif(min(automobile$peak_rpm), 3)} & \Sexpr{signif(max(automobile$peak_rpm), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	city\_mpg & \Sexpr{signif(quantile(automobile$city_mpg, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$city_mpg, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$city_mpg), 3)}& \Sexpr{signif(kurtosis(automobile$city_mpg), 3)} & \Sexpr{signif(min(automobile$city_mpg), 3)} & \Sexpr{signif(max(automobile$city_mpg), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	 highway\_mpg & \Sexpr{signif(quantile(automobile$highway_mpg, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$highway_mpg, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$highway_mpg), 3)}& \Sexpr{signif(kurtosis(automobile$highway_mpg), 3)} & \Sexpr{signif(min(automobile$highway_mpg), 3)} & \Sexpr{signif(max(automobile$highway_mpg), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 	price & \Sexpr{signif(quantile(automobile$price, probs = c( 0.25))[[1]], 3)}    & \Sexpr{signif(quantile(automobile$price, probs = c( 0.75))[[1]], 3)}  & \Sexpr{signif(skewness(automobile$price), 3)}& \Sexpr{signif(kurtosis(automobile$price), 3)} & \Sexpr{signif(min(automobile$price), 3)} & \Sexpr{signif(max(automobile$price), 3)}\\ \hline 
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 	
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 	
+ 	 	 	 	 	 	 	 	
+
+	\end{tabular}
+			\label{table:statistics2} 
+		\end{table}
+
+	
+
+	
+	
+	In tables \ref{table:statistics1} and \ref{table:statistics2} we present values of mean, median, interquartile range (IQR), variance (var), standard deviation (sd), mean-absolute deviation (madstat), coefficient of variation (cv), first quartile (Q1), third quartile (Q3), skweness (skew.), kurtosis, minimal value (min) and maximal value (max). Looking at the tables we can conclude:
+	\begin{enumerate}
+	\item The data on normalized losses appears to have a moderately spread distribution with a relatively low coefficient of variation, indicating a moderate level of relative variability. The distribution of normalized losses is slightly right-skewed (positive skewness) with a moderate kurtosis. The majority of the data falls within the interquartile range (IQR), and there are potential outliers on the higher end, as indicated by the relatively large maximum value.
+	
+	\item The wheel base data is more tightly distributed compared to normalized losses, with a low coefficient of variation suggesting lower relative variability. The wheel base data is right-skewed with a positive kurtosis, suggesting a distribution with a tail on the right. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	\item Similar to wheel base, the length data has a relatively low coefficient of variation, indicating a moderate level of relative variability. The length data has a relatively symmetric distribution with a slight right skewness and negative kurtosis. The majority of the data falls within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item The width data is relatively tightly distributed with a low coefficient of variation. The width data is right-skewed with positive kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item The height data shows a moderate level of relative variability. The height data is slightly right-skewed with a negative kurtosis. The majority of the data is within the IQR, and there are potential outliers on the lower end.
+	
+	
+	\item Curb weight data has a higher coefficient of variation, indicating a higher level of relative variability. Curb weight data is right-skewed with a moderate kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Engine size data has moderate relative variability. The engine size data is right-skewed with a high positive kurtosis, indicating a distribution with a heavy tail on the right. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Bore data is relatively tightly distributed with a higher coefficient of variation. The bore data is nearly normally distributed with low skewness and negative kurtosis. The majority of the data falls within the IQR.
+	
+	
+	\item Stroke data has a higher coefficient of variation, indicating higher relative variability. Stroke data is left-skewed with a positive kurtosis, suggesting a distribution with a tail on the left. The majority of the data is within the IQR.
+	
+	
+	\item Compression ratio data has a high coefficient of variation, suggesting a high level of relative variability. Compression ratio data is highly right-skewed with a high positive kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Horsepower data has moderate relative variability. Horsepower data is right-skewed with positive kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Peak RPM data is relatively tightly distributed with a low coefficient of variation. Peak RPM data is slightly right-skewed with low kurtosis. The majority of the data is within the IQR.
+	
+	
+	\item City miles per gallon data has relatively low variability. City miles per gallon data is right-skewed with positive kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Highway miles per gallon data has moderate variability. Highway miles per gallon data is right-skewed with positive kurtosis. The majority of the data is within the IQR, and there are potential outliers on the higher end.
+	
+	
+	\item Price data has a high coefficient of variation, indicating a high level of relative variability. The price data is significantly right-skewed with a high positive kurtosis, indicating a distribution with a heavy tail on the right. The majority of the data falls within the interquartile range (IQR), and there are potential outliers on the higher end. This suggests that the prices are concentrated in a relatively narrow range for the majority of the vehicles, with a few high-priced outliers.
+
+	\end{enumerate}
+
+
+<<echo = FALSE>>=
+numeric_cols <- c("normalized_losses","wheel_base", "length", "width", "height", "curb_weight", "engine_size", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price")
+df2 <- automobile[, numeric_cols]
+@
+	
+	
+<<corr_plot, echo=FALSE, fig.cap="Correlation heatmap for all features">>=
+corrplot(cor(df2),  method = "color",
+  tl.cex = 0.6,        # Adjust the text label size
+  tl.col = "black",    # Set label color to black
+  tl.srt = 45,         # Rotate labels by 45 degrees
+  addCoef.col = "black",
+   number.cex = 0.7)
+
+@
+	
+	
+	In figure \ref{fig:corr_plot} we present a heatmap containing correlation coefficients between all the quantitative features. Analysing it we can conclude that:
+	\begin{enumerate}
+	
+\item we observe strong positive correlations between: city\_mpg and highway\_mpg, wheel\_base and length, engine\_size and horsepower, length and width, length and curb\_width, engine\_size and curb\_width.
+\item we observe moderate negative correlations between: peak\_rpm and price, horsepower and price, compression\_ratio and highway\_mpg, length and highway\_mpg, curb\_weight and city\_mpg.
+\item we can conclude that the horsepower and engine\_size show a strong positive correlation of 0.78, indicating that vehicles with larger engines tend to have higher horsepower. Columns curb\_weight and engine\_size also exhibit a strong positive correlation of 0.78, suggesting that heavier vehicles tend to have larger engines.There is a noticeable negative correlation between highway\_mpg and several other features, indicating that as certain vehicle attributes increase, fuel efficiency on the highway tends to decrease.
+\item we have also observed that the city\_mpg and highway\_mpg are pretty correlated, the coefficient is close to 1, so we are not going to consider city\_mpg variable in further analysis
+	\end{enumerate}
+	
+	\subsection{Normality test}
+	
+		\begin{table}[ht]
+			
+			%\begin{flushleft}
+			\centering
+			
+			\caption{Values of statistic of p--value of performed Shapiro Wilk test for normality for each quantitative column in the dataset.} % title of Table	
+			\begin{tabular}{|c |c |c|} % centered columns (4 columns)
+				
+				\hline %inserts double horizontal lines
+				 & p -- value & statistic \\ [0.5ex] % inserts table
+				%heading
+    \hline
+				
+         normalized\_losses & $7.145 \cdot 10^{-6}$ &  0.95665\\ \hline     
+				wheel\_base & $ 6.726 \cdot 10^{-10}$  & 0.90841   \\ \hline
+				length & 0.01149 &  0.98232 \\ \hline
+				width & $6.354 \cdot 10^{-9}$ & 0.92207  \\ \hline
+				height & 0.01814 & 0.98365 \\ \hline
+				curb\_weight & $2.741 \cdot 10^{-6}$ & 0.95259\\ \hline
+					engine\_size & $3.225 \cdot 10^{-14}$ &  0.82909\\ \hline
+						bore & $ 8.366 \cdot 10^{-5}$ & 0.96623\\ \hline
+							stroke & $8.31 \cdot 10^{-8}$ & 0.93608 \\ \hline
+								compression\_ratio & $2.2 \cdot 10^{-16}$ & 0.49886 \\ \hline
+									horsepower & $1.972 \cdot 10^{-11}$ & 0.884 \\ \hline
+										peak\_rpm & 0.0002378 & 0.96996\\ \hline
+											city\_mpg & $8.572 \cdot 10^{-6}$ & 0.9574\\ \hline
+												highway\_mpg & 0.0007151 &  0.9737 \\ \hline
+													price &$1.899 \cdot 10^{-15}$ &0.79994 \\ \hline
+		
+
+			\end{tabular}
+			\label{table:shapiro} 
+		\end{table}
+		
+		
+		The table \ref{table:shapiro} presents the results of the Shapiro--Wilk test for normality conducted on various quantitative columns in the dataset. The test assesses whether the data in each column follows a normal distribution. The key statistics provided are the p--values and test statistics. Here are the conclusions based on the results:
+\begin{enumerate}
+\item normalized\_losses -- the p-value is extremely small ($7.145 \cdot 10^{-6}$), indicating that the data for wheel\_base is not normally distributed,
+
+\item wheel\_base -- the p-value is extremely small ($6.726 \cdot 10^{-10}$), indicating that the data for wheel\_base is not normally distributed,
+
+\item length -- the p-value (0.01149) is less than the typical significance level of 0.05, suggesting that the data for length is not normally distributed.
+
+\item width -- the p-value is very small ($6.354 \cdot 10^{-9}$), indicating that the data for width is not normally distributed.
+
+\item height -- the p-value (0.01814) is less than 0.05, suggesting that the data for height is not normally distributed.
+
+\item curb\_weight -- the p-value is small ($2.741 \cdot 10^{-6}$), indicating that the data for curb\_weight is not normally distributed.
+
+\item engine\_size -- the p-value is extremely small ($3.225 \cdot 10^{-14}$), indicating that the data for engine\_size is not normally distributed.
+
+\item bore -- the p--value is small ($8.366 \cdot 10^{-5}$), suggesting that the data for bore is not normally distributed.
+
+\item stroke -- the p-value is small ($8.31 \cdot 10^{-8}$), indicating that the data for stroke is not normally distributed.
+
+\item compression\_ratio -- the p-value is extremely small ($2.2 \cdot 10^{-16}$), indicating that the data for compression\_ratio is not normally distributed.
+
+\item horsepower -- the p-value is very small ($1.972 \cdot 10^{-11}$), indicating that the data for horsepower is not normally distributed.
+
+\item peak\_rpm -- the p-value (0.0002378) is less than 0.05, suggesting that the data for peak\_rpm is not normally distributed.
+
+\item city\_mpg -- the p-value is small ($8.572 \cdot 10^{-6}$), indicating that the data for city\_mpg is not normally distributed.
+
+\item highway\_mpg -- the p-value (0.0007151) is less than 0.05, suggesting that the data for highway\_mpg is not normally distributed.
+
+\item price -- the p-value is extremely small ($1.899 \cdot 10^{-15}$), indicating that the data for price is not normally distributed.
+
+\end{enumerate}
+
+In summary, based on the Shapiro--Wilk test results, none of the quantitative columns in the dataset appear to follow a normal distribution. This information is important for choosing appropriate statistical analyses, as some methods assume normality in the data. 
+
+
+	<<qqplot_EDA, echo=FALSE, fig.cap="Q-Q plots for all the quantitative features.", warning=FALSE>>=
+	df_qqplot <- tidyr::gather(automobile_quantitative, key = "variable", value = "value")
+	
+	ggplot(df_qqplot, aes(sample=value)) +
+	stat_qq() +
+	stat_qq_line() +
+	facet_wrap(~variable, scales="free")
+	@
+	
+In figure \ref{fig:qqplot_EDA} we present Q--Q plots for all the quantitative features in the dataset. Based on them, we can assess normality of data. What we can observe is the fact, that the length looks to be the closest to the normal distribution, the rest of the columns do not cover the line. Summing up the results obtained from the Shapiro--Wilk test and Q--Q plots we conclude that none of the features follows the normal distribution.
+	
+<<echo = FALSE, results = 'hide'>>=
+shapiro.test(automobile$normalized_losses)
+shapiro.test(automobile$wheel_base)
+shapiro.test(automobile$length)
+shapiro.test(automobile$width)
+shapiro.test(automobile$height)
+shapiro.test(automobile$curb_weight)
+shapiro.test(automobile$engine_size)
+shapiro.test(automobile$bore)
+shapiro.test(automobile$stroke)
+shapiro.test(automobile$compression_ratio)
+shapiro.test(automobile$horsepower)
+shapiro.test(automobile$peak_rpm)
+shapiro.test(automobile$city_mpg)
+shapiro.test(automobile$highway_mpg)
+shapiro.test(automobile$price)
+@
+	
+
+
+
+	
+	\section{Classification}\label{sec:classification}
+In this section, we explore various classification methods and compare them to gain a deeper understanding of our dataset.
+	
+Firstly, we will begin with data preparation to determine whether our data should be standardized or if other modifications are necessary. Next, we will apply different classification methods, including linear regression, logistic regression, k–nearest neighbors, linear discriminant analysis, quadratic discriminant analysis, decision tree, random forest, and support vector machines.
+	
+	We will divide our dataset into training and test sets in a 0.85:0.15 proportion. The test set will be exclusively used in section \ref{sec:comparison} for the summary of accuracy of all considered classification methods. To choose the best parameters (e.g., the number of neighbors in k-–NN) among all studied methods, we will employ a 5-–fold Cross–-Validation assessment procedure in the training set.
+	
+	In section \ref{sec:data_preparation}, we will use the Random Forest method to investigate the most important features for the predicted class. The selected features will be utilized in each model. In addition to this approach, we will build a model that includes all features (those we won't delete from the dataset, for example, due to a variance approximately equal to 0). All obtained results will be compared in section \ref{sec:comparison}.
+	
+
+
+	\subsection{Data preparation}\label{sec:data_preparation}
+	In this subsection, we will address data preparation to ensure our data is ready for constructing the classification models.
+	
+	Firstly, it is important to note that in our target variable, "symboling," there are only three instances where the "symboling" has a value equal to -2, as illustrated in figure \ref{fig:barplots_categorical_features}. Building a meaningful model with such limited data for this variable is challenging. Therefore, we have chosen to exclude these records from our dataset, as the loss of information is minimal.
+	
+	
+	<<echo=FALSE>>=
+	automobile <- automobile |> 
+		dplyr::filter(symboling != -2) |> 
+		dplyr::mutate(symboling = droplevels(symboling))
+	@
+	
+	<<echo=FALSE>>=
+	automobile_quantitative <- automobile |> 
+	dplyr::select(where(is.numeric))
+	automobile_qualitative <- automobile |> 
+	dplyr::select(where(is.factor))
+	@
+	<<distribution_quantitative, fig.cap="Distribution of quantitative variables", echo=FALSE>>=
+	df_long3 <- tidyr::gather(automobile_quantitative, key = "variable", value = "value")
+	
+	ggplot(df_long3, aes(x = value)) +
+	geom_point(aes(x=value, y=runif(length(value)))) +
+	facet_wrap(~variable, scales = "free") +
+	labs(title="Distribution Plots", ylab=runif(0, 1))+
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+	@
+In figure \ref{fig:distribution_quantitative}, the distribution of all quantitative features in our data is illustrated. The values of individual variables are marked on the x-axis, while the y-axis represents values from a uniform distribution. This approach provides a better visualization of the relationships among variables.
+
+Upon inspecting the distribution plots, we have determined that it is worthwhile to binarize the "compression\_ratio" feature. This decision is based on the clear delineation of two classes observed in the variable values. Additionally, we plan to standardize all quantitative features to homogenize the scale of the data.
+	
+
+	<<echo=FALSE>>=
+	automobile <- arules::discretizeDF(automobile, methods = list(
+	compression_ratio = list(method = "cluster", breaks = 2, 
+	labels = c("low", "high")) 
+	),default = list(method = "none"))
+	@
+	
+
+	<<echo=FALSE>>=
+	automobile$compression_ratio |> 
+	table()
+	@
+	
+
+	
+	
+	Let us compare boxplots of standardized and non--standardized data:
+	
+	<<Boxplots_of_standarized_and_non_standarized_quantitative_features, fig.cap="Boxplots of all standarized and non-standarized quantitative features", echo=FALSE>>=
+	df_long4 <- gather(automobile |>
+	dplyr::select(where(is.numeric)), key = "Feature", value = "Value")
+
+	p1 <- ggplot(df_long4, aes(x = Feature, y = Value)) +
+	geom_boxplot() +
+	labs(title = "Boxplots of\nnon-standarized features",
+	x = "Features",
+	y = "Values") +
+	theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+	dataTransform <- caret::preProcess(automobile, method=c("center", "scale"))
+	dataset <- predict(dataTransform, automobile)
+
+	df_long5 <- gather(dataset |>
+	dplyr::select(where(is.numeric)), key = "Feature", value = "Value")
+
+	p2 <- ggplot(df_long5, aes(x = Feature, y = Value)) +
+	geom_boxplot() +
+	labs(title = "Boxplots of standarized features",
+	x = "Features",
+	y = "Values") +
+	theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+	p1+p2
+	@
+	
+	
+In figure \ref{fig:Boxplots_of_standarized_and_non_standarized_quantitative_features}, we can observe that the boxplots depicting standardized quantitative features provide more informative insights compared to those of the non--standardized features. Notably, it is observed that almost all features exhibit outliers, with the exception of the "stroke" feature. These outliers predominantly occur on the right side of the distribution. Furthermore, a recurring pattern is discerned, indicating a prevalent right--skewed distribution in the data.
+	
+Our next step is to split the dataset into two parts: one containing the "symboling" column (our class) and the other containing the remaining features.
+
+	
+	<<echo=FALSE>>=
+	data <- dataset |> 
+		dplyr::select(-symboling)
+	class <- automobile$symboling
+	@
+	
+	Now, we are examining features that offer minimal information. To achieve this, we will identify features with variances close to zero. These features are not conducive to constructing models, especially when our predicted value consists of six classes, as they exhibit nearly constant values. Feature for which the variance is equal near to zero is:
+	
+	<<echo=FALSE>>=
+	caret::nearZeroVar(data, names=TRUE)
+	@
+	
+	<<echo=FALSE>>=
+	data <- data |> 
+		dplyr::select(!engine_location)
+	@
+	
+	We conclude that for high correlated features to leave one of them. We will consider groups of features for which correlation is larger than 0.9. In the heat map \ref{fig:corr_plot}, which describes correlations among all features we can see that for quantitative variables: "city\_mpg" and "highway\_mpg" the correlation is equal to 0.97. So we decided to remove "city\_mpg" from the dataset.
+	
+	<<echo=FALSE>>=
+	data <- data |> 
+		dplyr::select(!city_mpg)
+	@
+	
+	We also use one--hot encoding to avoid some problems for considered classification models. One-hot encoding is a good approach to represent categorical type of features. Most of the classification models can not manage with such categorical values. 
+	
+	Before we move on to the classification section, we divide our dataset into training and test set. First of them we will use to build the classification model and the second one is needed to getting conclusion of results. We will use test set only in \ref{sec:comparison} section. We will calculate estimated accuracy of all considered classification problems using 5--fold Cross--Validation assessment method. Train and test subsets are divided into 0.85:0.15 proportions.
+	
+	<<echo=FALSE>>=
+	dummy <- caret::dummyVars(" ~ .", data=data)
+	data <- data.frame(predict(dummy, newdata = data)) |> 
+		dplyr::tibble()
+	@
+	
+
+	<<echo=FALSE>>=
+	train_indices <- caret::createDataPartition(y=class, times=1, p=0.85, list=FALSE)
+	test_set <- data[-train_indices,]
+	train_set <- data[train_indices,]
+	test_class <- class[-train_indices]
+	train_class <- class[train_indices]
+	
+	@
+	
+	Our next step is selection of the most important features, which we will use to build one of the model in each of considered classification method. To do this we  use feature elimination based on Random Forest approach. We will consider subsets which contains of between 1 and 50 features
+	<<cache=TRUE, echo=FALSE>>=
+	subsets <- c(1:50)
+	
+	rfeCtrl <- caret::rfeControl(functions=caret::rfFuncs,
+	method="cv",
+	verbose=FALSE)
+	
+	rf_profile <- caret::rfe(x=train_set,
+	y=train_class,
+	sizes=subsets,
+	rfeControl=rfeCtrl)
+	@
+	Outcome of the Random Forest approach for selecting the most important features is as follows:
+	<<echo=FALSE>>=
+	rf_profile$optVariables
+	@
+	Now let see the accuracy results for considered selecting subsets of features:
+	<<accuracy_results, echo=FALSE>>=
+	accuracy <- rf_profile$results[,c(1, 2)]$Accuracy
+	names(accuracy) <- rf_profile$results[,c(1, 2)]$Variables
+	accuracy
+	@
+	
+	We get maximal value of accuracy for \Sexpr{which.max(accuracy)} features, but for all values from considered interval the accuracy is quite large --- above 0.8 (apart from case of 1 feature).
+
+We will use the optimal features to build the model in each classification method.
+
+<<echo=FALSE>>=
+train_set2 <- train_set |> 
+	  dplyr::select(rf_profile$optVariables)
+test_set2 <- test_set |> 
+  dplyr::select(rf_profile$optVariables)
+@
+	
+	\subsection{Linear regression}\label{sec:linear_regression}
+	In this subsection we apply the linear regression to predict "symboling" variable. We will use "one versus rest" approach, to deal with multiple value of classes in our predicted variable. The "one versus rest" approach is based on binarize the predicted value, what lead to consider multiple tasks of binarize problem. 
+	
+Our predicted class consists of five values. Therefore, we decompose the linear regression problem into five binary problems.
+	
+	Let us build the model, which consists all quantitative features and let's check their confusion matrix.
+	
+	<<echo=FALSE>>=
+	five_fold_cv_conf_matrix <- function(dataset, class, classifier){
+	conf <- matrix(0, 5, 5)
+	rownames(conf) <- c(-1, 0, 1, 2, 3)
+	colnames(conf) <- c(-1, 0, 1, 2, 3)
+	splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+	datasets <- list(dataset[splits==1,],
+	dataset[splits==2,],
+	dataset[splits==3,],
+	dataset[splits==4,],
+	dataset[splits==5,])
+	
+	classes <- list(class[splits==1] |> as.numeric(),
+	class[splits==2] |> as.numeric(),
+	class[splits==3] |> as.numeric(),
+	class[splits==4] |> as.numeric(),
+	class[splits==5] |> as.numeric())
+	bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+	bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+	for (i in 1:5){
+	class1 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+	dplyr::pull()
+	class2 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+	dplyr::pull()
+	class3 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+	dplyr::pull()
+	class4 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+	dplyr::pull()
+	class5 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+	dplyr::pull()
+	lm1 <- classifier(class1 ~ ., data=bind_datasets[[i]])
+	lm2 <- classifier(class2 ~ ., data=bind_datasets[[i]])
+	lm3 <- classifier(class3 ~ ., data=bind_datasets[[i]])
+	lm4 <- classifier(class4 ~ ., data=bind_datasets[[i]])
+	lm5 <- classifier(class5 ~ ., data=bind_datasets[[i]])
+	predicted <- unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+	c(predict(lm1, datasets[[i]][j, ]), predict(lm2, datasets[[i]][j, ]), predict(lm3, datasets[[i]][j, ]),
+	predict(lm4, datasets[[i]][j, ]), predict(lm5, datasets[[i]][j, ])) |> 
+	which.max()
+	})) %>%
+	replace(.==1, -1) %>%
+	replace(.==2, 0) %>%
+	replace(.==3, 1) %>%
+	replace(.==4, 2) %>%
+	replace(.==5, 3)
+	for (k in 1:length(predicted)){
+	conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] <- conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] + 1
+	}
+	}
+	conf
+	}
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	conf_matrix <- five_fold_cv_conf_matrix(train_set, train_class, lm)
+conf_matrix
+	@
+	And now let see the accuracy for this method:
+	
+	<<echo=FALSE>>=
+	sum(diag(conf_matrix))/sum(sum(conf_matrix))
+	@
+	
+	And the results for the most important features:
+	
+<<echo=FALSE>>=
+conf_matrix2 <- five_fold_cv_conf_matrix(train_set2, train_class, lm)
+conf_matrix2
+@
+
+<<echo=FALSE>>=
+sum(diag(conf_matrix2))/sum(sum(conf_matrix2))
+@
+
+	
+	
+
+For the original features the model achieved an accuracy of approximately \Sexpr{sum(diag(conf_matrix))/sum(sum(conf_matrix))}.
+The confusion matrix indicates that the model struggled to accurately predict instances across all classes, with notable misclassifications in various cells.
+For the most important features the model achieved an accuracy of approximately \Sexpr{sum(diag(conf_matrix2))/sum(sum(conf_matrix2))}.
+The confusion matrix for the most important features shows more pattern of misclassifications, and the accuracy is significantly larger for whole dataset.
+Both models seem to have similar performance.
+Further analysis, feature engineering, or trying different models may be needed to improve classification performance.
+	\subsection{Logistic regression}
+	Logistic regression also requires from us dividing the multi--classification task into multiple binary--classification tasks ("one versus rest" approach). So as in \ref{sec:linear_regression} subsection we divide the problem into six tasks and similarly we use only quantitative features to fit the model. 
+	<<echo=FALSE>>=
+	five_fold_cv_logistic_conf_matrix <- function(dataset, class, classifier){
+	splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+	conf <- matrix(0, 5, 5)
+	rownames(conf) <- c(-1, 0, 1, 2, 3)
+	colnames(conf) <- c(-1, 0, 1, 2, 3)
+	datasets <- list(dataset[splits==1,],
+	dataset[splits==2,],
+	dataset[splits==3,],
+	dataset[splits==4,],
+	dataset[splits==5,])
+	
+	classes <- list(class[splits==1] |> as.numeric(),
+	class[splits==2] |> as.numeric(),
+	class[splits==3] |> as.numeric(),
+	class[splits==4] |> as.numeric(),
+	class[splits==5] |> as.numeric())
+	bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+	bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+	for (i in 1:5){
+	class1 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==-1, 1, 0)) |> 
+	dplyr::pull()
+	class2 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==0, 1, 0)) |> 
+	dplyr::pull()
+	class3 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==1, 1, 0)) |> 
+	dplyr::pull()
+	class4 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==2, 1, 0)) |> 
+	dplyr::pull()
+	class5 <- bind_classes[[i]] |> as_tibble() |> 
+	mutate(value=ifelse(bind_classes[[i]]==3, 1, 0)) |> 
+	dplyr::pull()
+	glm1 <- classifier(class1 ~ ., data=bind_datasets[[i]], family = binomial)
+	glm2 <- classifier(class2 ~ ., data=bind_datasets[[i]], family = binomial)
+	glm3 <- classifier(class3 ~ ., data=bind_datasets[[i]], family = binomial)
+	glm4 <- classifier(class4 ~ ., data=bind_datasets[[i]], family = binomial)
+	glm5 <- classifier(class5 ~ ., data=bind_datasets[[i]], family = binomial)
+	predicted <- unlist(sapply(1:nrow(bind_datasets[[i]]), function(j){
+	c(predict(glm1, datasets[[i]][j, ]), predict(glm2, datasets[[i]][j, ]), predict(glm3, datasets[[i]][j, ]),
+	predict(glm4, datasets[[i]][j, ]), predict(glm5, datasets[[i]][j, ])) |> 
+	which.max()
+	})) %>%
+	replace(.==1, -1) %>%
+	replace(.==2, 0) %>%
+	replace(.==3, 1) %>%
+	replace(.==4, 2) %>%
+	replace(.==5, 3)
+	for (k in 1:length(predicted)){
+	conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] <- conf[as.numeric(predicted[k]), as.numeric(classes[[i]][k])] + 1
+	}
+	}
+	conf
+	}
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	conf_matrix_lr <- five_fold_cv_logistic_conf_matrix(train_set, train_class, glm)
+conf_matrix_lr
+	@
+	And now let see the accuracy for this method:
+	<<echo=FALSE>>=
+	sum(diag(conf_matrix_lr))/sum(sum(conf_matrix_lr))
+	@
+	
+	Now let us see results for the most important features:
+	
+<<warning=FALSE, echo=FALSE>>=
+	conf_matrix_lr2 <- five_fold_cv_logistic_conf_matrix(train_set2, train_class, glm)
+conf_matrix_lr2
+@
+
+<<echo=FALSE>>=
+	sum(diag(conf_matrix_lr2))/sum(sum(conf_matrix_lr2))
+@
+	
+For the original features the model achieved an accuracy of approximately \Sexpr{sum(diag(conf_matrix_lr))/sum(sum(conf_matrix_lr))}.
+The confusion matrix indicates difficulties in accurately predicting instances across all classes. The model tends to misclassify instances, especially in predicting class 1.
+For the the most important features the model achieved an improved accuracy of approximately \Sexpr{sum(diag(conf_matrix_lr2))/sum(sum(conf_matrix_lr2))} when using the most important features.
+The confusion matrix for the most important features shows better performance, with fewer misclassifications compared to the model with original features.
+Logistic regression with the most important features outperforms logistic regression with the original features.
+The accuracy improvement suggests that the selection of the most important features has a positive impact on the model's predictive performance.
+
+	
+	\subsection{k-Nearest Neighbors (k-NN)}
+	
+	K-NN method is based on k nearest neighbors to a given data point and it takes the majority vote to classify the data point.
+	
+Let us apply kNN algorithm to our whole dataset and for most important features. 
+<<echo=FALSE>>=
+knn_accuracy <- function(dataset, class, opt_k){
+	splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+	conf1 <- matrix(0, 5, 5)
+	rownames(conf1) <- c(-1, 0, 1, 2, 3)
+	colnames(conf1) <- c(-1, 0, 1, 2, 3)
+	
+	conf2 <- matrix(0, 5, 5)
+	rownames(conf2) <- c(-1, 0, 1, 2, 3)
+	colnames(conf2) <- c(-1, 0, 1, 2, 3)
+	
+	datasets <- list(dataset[splits==1,],
+	dataset[splits==2,],
+	dataset[splits==3,],
+	dataset[splits==4,],
+	dataset[splits==5,])
+	
+	
+	classes <- list(class[splits==1] |> as.numeric(),
+	class[splits==2] |> as.numeric(),
+	class[splits==3] |> as.numeric(),
+	class[splits==4] |> as.numeric(),
+	class[splits==5] |> as.numeric())
+	
+	bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+	
+	
+	bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+	
+	
+	for (i in 1:5){
+	  predicted.labels1 <- class::knn(bind_datasets[[i]], datasets[[i]], bind_classes[[i]], k = opt_k)
+	  confusion.matrix1 <- table(predicted.labels1, classes[[i]])
+	  conf1 <- conf1 + confusion.matrix1
+	  
+	  predicted.labels2 <- class::knn(bind_datasets[[i]], bind_datasets[[i]], bind_classes[[i]], k = opt_k)
+	  confusion.matrix2 <- table(predicted.labels2, bind_classes[[i]])
+	  conf2 <- conf2 + confusion.matrix2
+	}
+	list(conf1, conf2)
+}
+@
+	
+
+<<echo=FALSE>>=
+results <- sapply(1:25, function(i){
+  a <- knn_accuracy(train_set, train_class, i)
+  c(sum(diag(a[[1]]))/sum(sum(a[[1]])), sum(diag(a[[2]]))/sum(sum(a[[2]])))
+})
+@
+
+<<knn_results, fig.cap="Accuracies comparison for train and test sets (summarized results for 5-fold C-V)", echo=FALSE>>=
+ggplot() +
+	  geom_point(aes(x=1:length(results[1, ]), y=results[1, ], color="Test set")) +
+	  geom_line(aes(x=1:length(results[1, ]), y=results[1, ], color="Test set")) +
+	  geom_point(aes(x=1:length(results[2, ]), y=results[2, ], color="Train set")) +
+	  geom_line(aes(x=1:length(results[2, ]), y=results[2, ], color="Train set")) +
+	  labs(color="Legend", x="Number of neighbors", y="Accuracy",
+	       title="Average accuracies for kNN classification method\nfor differend values of nearest neighbors")
+@
+	
+<<echo=FALSE>>=
+results2 <- sapply(1:25, function(i){
+  a <- knn_accuracy(train_set2, train_class, i)
+  c(sum(diag(a[[1]]))/sum(sum(a[[1]])), sum(diag(a[[2]]))/sum(sum(a[[2]])))
+})
+@
+
+<<knn_results2, fig.cap="Accuracies comparison for train and test sets (summarized results for 5-fold C-V) for selected features", echo=FALSE>>=
+ggplot() +
+	  geom_point(aes(x=1:length(results2[1, ]), y=results2[1, ], color="Test set")) +
+	  geom_line(aes(x=1:length(results2[1, ]), y=results2[1, ], color="Test set")) +
+	  geom_point(aes(x=1:length(results2[2, ]), y=results2[2, ], color="Train set")) +
+	  geom_line(aes(x=1:length(results2[2, ]), y=results2[2, ], color="Train set")) +
+	  labs(color="Legend", x="Number of neighbors", y="Accuracy",
+	       title="Average accuracies for kNN classification method\nfor differend values of nearest neighbors")
+@
+
+In figures \ref{fig:knn_results} and \ref{fig:knn_results2} we can see accuracy for train and test sets (summarized for 5-fold Cross-Validation assessment method) for different value of number of nearest neighbors --- k, for whole dataset --- \ref{fig:knn_results} and for selected features --- \ref{fig:knn_results2}. As we see, in the charts, for 1 nearest neighbors the accuracy for train set is equal to 1 (for whole dataset and for selected features) and for test sets accuracies are the largest for 1 nearest neighbors, both for whole dataset and for selected features. We can see that the more number of nearest neighbors are, the less (in general) the accuracies for train and test sets are, for whole dataset and selected features. So we conclude that the optimal number of nearest neighbors is equal to 1.
+
+
+	\subsection{Linear Discriminant Analysis (LDA)}
+
+In this section we will apply linear discriminant analysis to our dataset.
+
+<<echo=FALSE>>=
+	five_fold_cv_LDA_conf_matrix <- function(dataset, class){
+	splits <- createFolds(class, k = 5, list = FALSE, returnTrain = FALSE)
+	conf <- matrix(0, 5, 5)
+	rownames(conf) <- c(-1, 0, 1, 2, 3)
+	colnames(conf) <- c(-1, 0, 1, 2, 3)
+	datasets <- list(dataset[splits==1,],
+	dataset[splits==2,],
+	dataset[splits==3,],
+	dataset[splits==4,],
+	dataset[splits==5,])
+	
+	classes <- list(class[splits==1] |> as.numeric(),
+	class[splits==2] |> as.numeric(),
+	class[splits==3] |> as.numeric(),
+	class[splits==4] |> as.numeric(),
+	class[splits==5] |> as.numeric())
+	bind_datasets <- list(rbind(datasets[[2]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[3]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[4]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[5]]),
+	rbind(datasets[[1]], datasets[[2]], datasets[[3]], datasets[[4]]))
+	bind_classes <- list(c(classes[[2]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[3]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[4]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[5]]),
+	c(classes[[1]], classes[[2]], classes[[3]], classes[[4]]))
+	for (i in 1:5){
+	  model <- MASS::lda(bind_classes[[i]]~., data=bind_datasets[[i]] |> janitor::remove_constant())
+	  predicted.labels <- predict(model, datasets[[i]])$class
+	  confusion.matrix <- table(predicted.labels, classes[[i]])
+	  conf <- conf + confusion.matrix
+	}
+	conf
+	}
+@
+
+We obtained such confusion matrix for 5-fold Cross-Validation: 
+
+<<warning=FALSE, echo=FALSE>>=
+conf_lda <- five_fold_cv_LDA_conf_matrix(train_set, train_class)
+conf_lda
+@
+
+<<echo=FALSE>>=
+sum(diag(conf_lda))/sum(sum(conf_lda))
+@
+
+	Now let us see results for the most important features:
+	
+<<warning=FALSE, echo=FALSE>>=
+conf_lda2 <- five_fold_cv_LDA_conf_matrix(train_set2, train_class)
+conf_lda2
+@
+
+<<echo=FALSE>>=
+sum(diag(conf_lda2))/sum(sum(conf_lda2))
+@
+
+During building the models we have to remove constant columns from a dataframe, because LDA in R language can not have constant column. We assume that this affect not so much for results, because in every split (in 5-fold Cross-Validation) there were a little number of constant columns (between 1-4). Fixed columns exist in case when there is no instance of certain value for qualitative values (because of one-hot encoding).
+
+
+
+For original features the model achieved an accuracy of approximately \Sexpr{sum(diag(conf_lda))/sum(sum(conf_lda))}.
+The confusion matrix indicates relatively good performance, with fewer misclassifications compared to logistic regression.
+For the most important features the model achieved a significantly lower accuracy of approximately \Sexpr{sum(diag(conf_lda2))/sum(sum(conf_lda2))} when using the most important features.
+LDA performed reasonably better when using whole dataset in our problem.
+The accuracy drop with the most important features suggests that feature selection might not have significantly improved the model's performance in this case.
+
+
+	
+	\subsection{Quadratic Discriminant Analysis (QDA)}
+We also intended to classify our dataset using the QDA method. However, due to the limited number of records in our dataset, this proves to be impractical. QDA would be feasible only if we were to utilize two or three predictors. To ensure a comprehensive comparison of all classification methods, we have decided to omit  the QDA classification method in our project.
+	\subsection{Decision tree}
+	
+	Now we will apply classification tree to our problem. We set parameters as follows:
+	\begin{itemize}
+	\item the minimum number of observations that must exist in a node in order for a split to be attempted is equal to 5,
+	\item complexity parameter (cp) is in \{0.001, 0.01, 0.1\},
+	\item the maximum depth of any node of the final tree is equal to 20.
+	\end{itemize}
+	
+	We use 5-fold Cross-Validation method to assess the accuracy of classification method. The tree will be fitting by using \verb|caret| package from R programming language:
+	
+<<echo=FALSE>>=
+five_fold_ctree <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  tune_grid <- expand.grid(cp=c(0.001, 0.01, 0.1))
+  
+  cv_tree <- caret::train(class~., data=dataset,
+                          method="rpart",
+                          trControl=train_control,
+                          tuneGrid=tune_grid,
+                          maxdepth=20,
+                          minbucket=5)
+  cv_tree
+}
+@
+
+<<echo=FALSE>>=
+tree <- five_fold_ctree(train_set, train_class)
+@
+
+The best complexity parameter for our tree is equal to \Sexpr{tree$bestTune} and the accuracy --- \Sexpr{tree$results$Accuracy |> max()}. Below we perform a visualization of the tree:
+
+<<tree, fig.cap="Final tree for all features", echo=FALSE>>=
+tree$finalModel |> rattle::fancyRpartPlot()
+@
+
+	In the figure \ref{fig:tree} we can see optimal classification tree for our classification problem. As we see, all classes are included in tree leaves. One of the big advantages of classification trees is that they are easy to interpretation for interested, for instance in our case automobile companies can easily see which parameters impact the most for certain risky ratio and what can be change to improve results.
+	
+Now let us see results for the most important features:
+	
+<<warning=FALSE, echo=FALSE>>=
+tree2 <- five_fold_ctree(train_set2, train_class)
+@
+
+The best complexity parameter for our tree is equal to \Sexpr{tree2$bestTune} and the accuracy --- \Sexpr{tree2$results$Accuracy |> max()}. Below we perform a visualization of the tree:
+
+<<tree2, fig.cap="Final tree for most important features", echo=FALSE>>=
+tree2$finalModel |> rattle::fancyRpartPlot()
+@
+	
+	\subsection{Random forest}
+	Our next considered classification method is random forest. As earlier we use 5-fold Cross-Validation to assess the accuracy of classification method. We will use random forest implementation from \verb|caret| package and we will tune the number of variables randomly sampled as candidates at each split parameter. We know that there is recommended to use the number of variables randomly sampled equal to square root of number of features, so we will set the grid to this parameter in between -5 and 15 around square root of number of features in our dataset.
+	
+	<<echo=FALSE>>=
+	rf_5_fold_cv <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  tune_grid <- expand.grid(.mtry=(round(sqrt(ncol(dataset)))-5):(round(sqrt(ncol(dataset)))+15))
+  
+  cv_rf <- caret::train(class~., data=dataset,
+                          method="rf",
+                          metric="Accuracy",
+                          trControl=train_control,
+                          tuneGrid=tune_grid)
+  cv_rf
+	}
+	@
+	
+	<<echo=FALSE>>=
+	forest <- rf_5_fold_cv(train_set, train_class)
+	@
+	
+	The optimal number of variables randomly sampled as candidates at each split is equal to \Sexpr{forest$bestTune} and the accuracy for those parameter is equal to \Sexpr{forest$results$Accuracy |> max()}.
+	
+<<echo=FALSE>>=
+	rf_5_fold_cv2 <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  tune_grid <- expand.grid(.mtry=(round(sqrt(ncol(dataset)))-2):(round(sqrt(ncol(dataset)))+7))
+  
+  cv_rf <- caret::train(class~., data=dataset,
+                          method="rf",
+                          metric="Accuracy",
+                          trControl=train_control,
+                          tuneGrid=tune_grid)
+  cv_rf
+	}
+@
+	
+	
+<<warning=FALSE, echo=FALSE>>=
+forest2 <- rf_5_fold_cv2(train_set2, train_class)
+@
+
+	In case of selected features the optimal number of variables randomly sampled as candidates at each split is equal to \Sexpr{forest2$bestTune} and the accuracy for those parameter is equal to \Sexpr{forest2$results$Accuracy |> max()}.
+	
+	\subsection{Support Vector Machine (SVM)}
+	In this subsection we will apply SVM to our data. We will use implementation of SVM for \verb|caret| package, from R programming language. This package provides also automagically hyper parameter tuning for provided kernel. We will tune hyper parameters for three kernels: linear, polynomial and radial. We will use 5-fold Cross-validation to assess accuracies and we will take the kernel and correspondent hyper parameters, for which the accuracy will be the largest.
+	
+	<<echo=FALSE>>=
+	svm_5_fold_lin <- function(dataset, class){
+	dataset <- dataset |> dplyr::mutate(class=class)
+	train_control <- caret::trainControl(method = "repeatedcv",
+	number = 5,
+	repeats = 1) 
+	
+	cv_svm <- caret::train(class~., data=dataset,
+	method="svmLinear",
+	trControl=train_control,
+	tuneLength=4)
+	cv_svm
+	}
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_lin <- svm_5_fold_lin(train_set, train_class)
+	as_tibble(svm_lin$results[which.max(svm_lin$results$Accuracy),])
+	@
+	
+	<<echo=FALSE>>=
+	svm_5_fold_radial <- function(dataset, class){
+	dataset <- dataset |> dplyr::mutate(class=class)
+	train_control <- caret::trainControl(method = "repeatedcv",
+	number = 5,
+	repeats = 1) 
+	
+	cv_svm <- caret::train(class~., data=dataset,
+	method="svmRadial",
+	trControl=train_control,
+	tuneLength=10)
+	cv_svm
+	}
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_radial <- svm_5_fold_radial(train_set, train_class)
+	as_tibble(svm_radial$results[which.max(svm_radial$results$Accuracy),])
+	@
+	
+	<<echo=FALSE>>=
+	svm_5_fold_poly <- function(dataset, class){
+	dataset <- dataset |> dplyr::mutate(class=class)
+	train_control <- caret::trainControl(method = "repeatedcv",
+	number = 5,
+	repeats = 1) 
+	
+	cv_svm <- caret::train(class~., data=dataset,
+	method="svmPoly",
+	trControl=train_control,
+	tuneLength=5)
+	cv_svm
+	}
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_poly <- svm_5_fold_poly(train_set, train_class)
+	as_tibble(svm_poly$results[which.max(svm_poly$results$Accuracy),])
+	@
+	
+	Now let us see results for the most important features:
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_lin2 <- svm_5_fold_lin(train_set2, train_class)
+	as_tibble(svm_lin2$results[which.max(svm_lin2$results$Accuracy),])
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_radial2 <- svm_5_fold_radial(train_set2, train_class)
+	as_tibble(svm_radial2$results[which.max(svm_radial2$results$Accuracy),])
+	@
+	
+	<<warning=FALSE, echo=FALSE>>=
+	svm_poly2 <- svm_5_fold_poly(train_set2, train_class)
+	as_tibble(svm_poly2$results[which.max(svm_poly2$results$Accuracy),])
+	@
+	
+	As we may see in case of whole dataset we get the largest accuracy, equal to \Sexpr{svm_radial$results$Accuracy |> max()} for radial kernel, where sigma = \Sexpr{svm_radial$results$C[which.max(svm_radial2$results$Accuracy)]} and C = \Sexpr{svm_radial$results$C[which.max(svm_radial2$results$Accuracy)]} and for case of most important features we get the largest accuracy, equal to \Sexpr{svm_radial2$results$Accuracy |> max()} for radial kernel, where sigma = \Sexpr{svm_radial2$results$C[which.max(svm_radial2$results$Accuracy)]} and C = \Sexpr{svm_radial2$results$C[which.max(svm_radial2$results$Accuracy)]}. We will use those hyper parameters in \ref{sec:comparison} section during results comparison.
+	
+	
+	\section{Results comparison}\label{sec:comparison}
+	In this part of project we build the model, by training whole training dataset and then we compare the results using testing dataset, which was not used during detecting the best parameters for some of the classification models. This approach allows to avoid some problems regarding correlation between fitted model and testing set.
+	
+	\begin{itemize}
+		\item Linear regression:
+<<warning=FALSE, echo=FALSE>>=
+class1 <- train_class |> as_tibble() |>
+mutate(value=ifelse(train_class==-1, 1, 0)) |>
+dplyr::pull()
+class2 <- train_class |> as_tibble() |>
+mutate(value=ifelse(train_class==0, 1, 0)) |>
+dplyr::pull()
+class3 <- train_class |> as_tibble() |>
+mutate(value=ifelse(train_class==1, 1, 0)) |>
+dplyr::pull()
+class4 <- train_class |> as_tibble() |>
+mutate(value=ifelse(train_class==2, 1, 0)) |>
+dplyr::pull()
+class5 <- train_class |> as_tibble() |>
+mutate(value=ifelse(train_class==3, 1, 0)) |>
+dplyr::pull()
+lm1 <- lm(class1 ~ ., data=train_set)
+lm2 <- lm(class2 ~ ., data=train_set)
+lm3 <- lm(class3 ~ ., data=train_set)
+lm4 <- lm(class4 ~ ., data=train_set)
+lm5 <- lm(class5 ~ ., data=train_set)
+predicted1 <- unlist(sapply(1:nrow(train_set), function(j){
+c(predict(lm1, train_set[j, ]), predict(lm2, train_set[j, ]), predict(lm3, train_set[j, ]),
+predict(lm4, train_set[j, ]), predict(lm5, train_set[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+predicted2 <- unlist(sapply(1:nrow(train_set), function(j){
+c(predict(lm1, test_set[j, ]), predict(lm2, test_set[j, ]), predict(lm3, test_set[j, ]),
+predict(lm4, test_set[j, ]), predict(lm5, test_set[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+@
+		
+		
+<<echo=FALSE>>=
+acc1 <- table(predicted1, train_class)
+acc2 <- table(predicted2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(acc1))/sum(sum(acc1))} and for testing set --- \Sexpr{sum(diag(acc2))/sum(sum(acc2))}.
+
+For case of selected features:
+
+<<warning=FALSE, echo=FALSE>>=
+lm12 <- lm(class1 ~ ., data=train_set2)
+lm22 <- lm(class2 ~ ., data=train_set2)
+lm32 <- lm(class3 ~ ., data=train_set2)
+lm42 <- lm(class4 ~ ., data=train_set2)
+lm52 <- lm(class5 ~ ., data=train_set2)
+predicted12 <- unlist(sapply(1:nrow(train_set2), function(j){
+c(predict(lm12, train_set2[j, ]), predict(lm22, train_set2[j, ]), predict(lm32, train_set2[j, ]),
+predict(lm42, train_set2[j, ]), predict(lm52, train_set2[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+predicted22 <- unlist(sapply(1:nrow(train_set), function(j){
+c(predict(lm12, test_set2[j, ]), predict(lm22, test_set2[j, ]), predict(lm32, test_set2[j, ]),
+predict(lm42, test_set2[j, ]), predict(lm52, test_set2[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+@
+		
+		
+<<echo=FALSE>>=
+acc12 <- table(predicted12, train_class)
+acc22 <- table(predicted22, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(acc12))/sum(sum(acc12))} and for testing set --- \Sexpr{sum(diag(acc22))/sum(sum(acc22))}.
+		Feature selection has significantly less accuracy in this case.
+		
+		\item Logistic regression:
+		
+<<warning=FALSE, echo=FALSE>>=
+	glm1 <- glm(class1 ~ ., data=train_set, family = binomial)
+	glm2 <- glm(class2 ~ ., data=train_set, family = binomial)
+	glm3 <- glm(class3 ~ ., data=train_set, family = binomial)
+	glm4 <- glm(class4 ~ ., data=train_set, family = binomial)
+	glm5 <- glm(class5 ~ ., data=train_set, family = binomial)
+predictedlr1 <- unlist(sapply(1:nrow(train_set), function(j){
+c(predict(glm1, train_set[j, ]), predict(glm2, train_set[j, ]), predict(glm3, train_set[j, ]),
+predict(glm4, train_set[j, ]), predict(glm5, train_set[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+predictedlr2 <- unlist(sapply(1:nrow(train_set), function(j){
+c(predict(glm1, test_set[j, ]), predict(glm2, test_set[j, ]), predict(glm3, test_set[j, ]),
+predict(glm4, test_set[j, ]), predict(glm5, test_set[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+@
+		
+<<echo=FALSE>>=
+acc1lr <- table(predictedlr1, train_class)
+acc2lr <- table(predictedlr2, test_class)
+@		
+
+The accuracy for training set is equal to \Sexpr{sum(diag(acc1lr))/sum(sum(acc1lr))} and for testing set --- \Sexpr{sum(diag(acc2lr))/sum(sum(acc2lr))}.
+
+For case of selected featuers:
+
+<<warning=FALSE, echo=FALSE>>=
+	glm12 <- glm(class1 ~ ., data=train_set2, family = binomial)
+	glm22 <- glm(class2 ~ ., data=train_set2, family = binomial)
+	glm32 <- glm(class3 ~ ., data=train_set2, family = binomial)
+	glm42 <- glm(class4 ~ ., data=train_set2, family = binomial)
+	glm52 <- glm(class5 ~ ., data=train_set2, family = binomial)
+predicted1lr2 <- unlist(sapply(1:nrow(train_set2), function(j){
+c(predict(glm12, train_set2[j, ]), predict(glm22, train_set2[j, ]), predict(glm32, train_set2[j, ]),
+predict(glm42, train_set2[j, ]), predict(glm52, train_set2[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+predictedlr22 <- unlist(sapply(1:nrow(train_set2), function(j){
+c(predict(glm12, test_set2[j, ]), predict(glm22, test_set2[j, ]), predict(glm32, test_set2[j, ]),
+predict(glm42, test_set2[j, ]), predict(glm52, test_set2[j, ])) |>
+which.max()
+})) %>%
+replace(.==1, -1) %>%
+replace(.==2, 0) %>%
+replace(.==3, 1) %>%
+replace(.==4, 2) %>%
+replace(.==5, 3)
+@
+		
+<<echo=FALSE>>=
+acc1lr2 <- table(predicted1lr2, train_class)
+acc2lr2 <- table(predictedlr22, test_class)
+@		
+
+The accuracy for training set is equal to \Sexpr{sum(diag(acc1lr2))/sum(sum(acc1lr2))} and for testing set --- \Sexpr{sum(diag(acc2lr2))/sum(sum(acc2lr2))}.
+		Feature selection has significantly less accuracy in this case.
+		\item k-Nearest Neighbors:
+		
+<<echo=FALSE>>=
+model1 <- class::knn(train_set, train_set, train_class, k=1)
+model2 <- class::knn(train_set, test_set, train_class, k=1)
+confusion.matrix1 <- table(model1, train_class)
+confusion.matrix2 <- table(model2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1))/sum(sum(confusion.matrix1))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2))/sum(sum(confusion.matrix2))}.
+
+For case of selected features:
+
+<<echo=FALSE>>=
+model12 <- class::knn(train_set2, train_set2, train_class, k=1)
+model22 <- class::knn(train_set2, test_set2, train_class, k=1)
+confusion.matrix12 <- table(model12, train_class)
+confusion.matrix22 <- table(model22, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix12))/sum(sum(confusion.matrix12))} and for testing set --- \Sexpr{sum(diag(confusion.matrix22))/sum(sum(confusion.matrix22))}.
+		Feature selection has a minor impact, maintaining high accuracy on both sets.
+		\item Linear Discriminant Analysis:
+		
+<<warning=FALSE, echo=FALSE>>=
+model_lda <- MASS::lda(train_class~., data=train_set |> janitor::remove_constant())
+predicted.labels1lda <- predict(model_lda, train_set)$class
+confusion.matrix1lda <- table(predicted.labels1lda, train_class)
+
+predicted.labels2lda <- predict(model_lda, test_set)$class
+confusion.matrix2lda <- table(predicted.labels2lda, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1lda))/sum(sum(confusion.matrix1lda))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2lda))/sum(sum(confusion.matrix2lda))}.
+
+For case of selected features:
+
+<<warning=FALSE, echo=FALSE>>=
+model_lda2 <- MASS::lda(train_class~., data=train_set2 |> janitor::remove_constant())
+predicted.labels1lda2 <- predict(model_lda2, train_set2)$class
+confusion.matrix1lda2 <- table(predicted.labels1lda2, train_class)
+
+predicted.labels2lda2 <- predict(model_lda2, test_set2)$class
+confusion.matrix2lda2 <- table(predicted.labels2lda2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1lda2))/sum(sum(confusion.matrix1lda2))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2lda2))/sum(sum(confusion.matrix2lda2))}.
+	Feature selection has a notable impact, reducing accuracy on both sets.	
+		
+		\item Decision tree:
+		
+<<echo=FALSE>>=
+dataset <- train_set |> dplyr::mutate(class=train_class)
+
+tune_grid <- expand.grid(cp=c(0.01))
+
+tree <- caret::train(class~., data=dataset,
+                        method="rpart",
+                        tuneGrid=tune_grid,
+                        maxdepth=20,
+                        minbucket=5)
+@
+
+<<echo=FALSE>>=
+predicted.labels1tree <- predict(tree, train_set)
+confusion.matrix1tree <- table(predicted.labels1tree, train_class)
+
+predicted.labels2tree <- predict(tree, test_set)
+confusion.matrix2tree <- table(predicted.labels2tree, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1tree))/sum(sum(confusion.matrix1tree))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2tree))/sum(sum(confusion.matrix2tree))}.
+
+For case of selected features:
+
+<<echo=FALSE>>=
+dataset2 <- train_set2 |> dplyr::mutate(class=train_class)
+
+tune_grid <- expand.grid(cp=c(0.001))
+
+tree2 <- caret::train(class~., data=dataset2,
+                        method="rpart",
+                        tuneGrid=tune_grid,
+                        maxdepth=20,
+                        minbucket=5)
+@
+
+<<echo=FALSE>>=
+predicted.labels1tree2 <- predict(tree2, train_set2)
+confusion.matrix1tree2 <- table(predicted.labels1tree2, train_class)
+
+predicted.labels2tree2 <- predict(tree2, test_set2)
+confusion.matrix2tree2 <- table(predicted.labels2tree2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1tree2))/sum(sum(confusion.matrix1tree2))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2tree2))/sum(sum(confusion.matrix2tree2))}.
+Feature selection has an impact on accuracy in case of test set, which is significantly lower, than for whole dataset, but for training sets accuracies are comparable.
+		
+		
+		\item Random forest:
+		
+<<echo=FALSE>>=
+tune_grid <- expand.grid(.mtry=c(23))
+  
+rforest <- caret::train(class~., data=dataset,
+                        method="rf",
+                        metric="Accuracy",
+                        tuneGrid=tune_grid)
+@
+
+<<echo=FALSE>>=
+predicted.labels1rf <- predict(rforest, train_set)
+confusion.matrix1rf <- table(predicted.labels1rf, train_class)
+
+predicted.labels2rf <- predict(rforest, test_set)
+confusion.matrix2rf <- table(predicted.labels2rf, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1rf))/sum(sum(confusion.matrix1rf))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2rf))/sum(sum(confusion.matrix2rf))}.
+
+For case of selected fearures:
+
+<<echo=FALSE>>=
+tune_grid <- expand.grid(.mtry=c(2))
+  
+rforest2 <- caret::train(class~., data=dataset2,
+                        method="rf",
+                        metric="Accuracy",
+                        tuneGrid=tune_grid)
+@
+
+<<echo=FALSE>>=
+predicted.labels1rf2 <- predict(rforest2, train_set2)
+confusion.matrix1rf2 <- table(predicted.labels1rf2, train_class)
+
+predicted.labels2rf2 <- predict(rforest2, test_set2)
+confusion.matrix2rf2 <- table(predicted.labels2rf2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1rf2))/sum(sum(confusion.matrix1rf2))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2rf2))/sum(sum(confusion.matrix2rf2))}.
+Feature selection marginally affects accuracy, maintaining strong performance.		
+
+\item SVM:
+<<warning=FALSE, echo=FALSE>>=
+tune_grid <- expand.grid(C=64, sigma=0.011)
+
+svm_result <- caret::train(class~., data=dataset,
+	method="svmRadial",
+	metric="Accuracy",
+	tuneGrid=tune_grid)
+@
+
+<<warning=FALSE, echo=FALSE>>=
+predicted.labels1svm1 <- predict(svm_result, train_set)
+confusion.matrix1svm1 <- table(predicted.labels1svm1, train_class)
+
+predicted.labels2svm1 <- predict(svm_result, test_set)
+confusion.matrix2svm1 <- table(predicted.labels2svm1, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1svm1))/sum(sum(confusion.matrix1svm1))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2svm1))/sum(sum(confusion.matrix2svm1))}.
+
+<<warning=FALSE, echo=FALSE>>=
+tune_grid <- expand.grid(C=16, sigma=1)
+
+svm_result2 <- caret::train(class~., data=dataset2,
+	method="svmRadial",
+	metric="Accuracy",
+	tuneGrid=tune_grid)
+@
+
+<<echo=FALSE>>=
+predicted.labels1svm2 <- predict(svm_result2, train_set2)
+confusion.matrix1svm2 <- table(predicted.labels1svm2, train_class)
+
+predicted.labels2svm2 <- predict(svm_result2, test_set2)
+confusion.matrix2svm2 <- table(predicted.labels2svm2, test_class)
+@
+
+The accuracy for training set is equal to \Sexpr{sum(diag(confusion.matrix1svm2))/sum(sum(confusion.matrix1svm2))} and for testing set --- \Sexpr{sum(diag(confusion.matrix2svm2))/sum(sum(confusion.matrix2svm2))}.
+
+		The SVM method demonstrated good performance on the entire dataset, achieving an accuracy of \Sexpr{sum(diag(confusion.matrix2svm1))/sum(sum(confusion.matrix2svm1))} using a radial kernel, sigma=1, and cost parameter C equal to 64. When considering only the most important features, the SVM method performed even better, achieving an accuracy of \Sexpr{sum(diag(confusion.matrix2svm2))/sum(sum(confusion.matrix2svm2))}. This was achieved using a radial kernel with a sigma value of 0.304 and a cost parameter C equal to 32. The selected hyperparameters, including the kernel type, sigma, and cost parameter, significantly influenced the performance of the SVM method. The chosen parameters, such as a radial kernel with sigma=1, C=64 and a radial kernel with sigma 0.304 and C=32, proved to be effective in capturing the underlying patterns in the data.
+	\end{itemize}
+	
+The decision to use a dedicated testing dataset not involved in the parameter tuning process is a prudent choice. This helps mitigate issues related to overfitting and provides a more accurate representation of the models' generalization capabilities.	
+	The choice of classification models significantly influences their performance, with each model showcasing varying strengths and weaknesses.
+Feature selection, in certain cases, impacts accuracy, highlighting the importance of considering relevant predictors.
+
+
+
+
+
+
+
+	
+	\section{Summary and further research suggestions}
+	
+	In this project, we conducted a comprehensive analysis of an automobile dataset using R. The key steps included exploratory data analysis (EDA), handling missing values, standardization, and employing various classification methods such as linear regression, logistic regression, decision tree, random forest, QDA, and LDA for predicting the symboling feature of automobiles. EDA revealed valuable insights into the distribution of features and potential patterns within the dataset.
+Standardization of features was performed to ensure consistency and comparability across different scales, particularly benefiting models sensitive to feature scaling
+Multiple classification methods were employed to predict automobile symboling, revealing varying degrees of accuracy and highlighting the importance of model selection.
+
+We have also managed that answer all the research questions that we have stated in the introduction:
+
+\begin{enumerate}
+\item How are the numerical features correlated with each other? -- Strong positive correlations exist between city\_mpg and highway\_mpg, wheel\_base and length, engine\_size and horsepower, length and width, length and curb\_width, as well as engine\_size and curb\_width. Moderate negative correlations are observed between peak\_rpm and price, horsepower and price, compression\_ratio and highway\_mpg, length and highway\_mpg, and curb\_weight and city\_mpg. A robust positive correlation of 0.78 is noted between horsepower and engine\_size, indicating that larger engines tend to have higher horsepower. Similarly, curb\_weight and engine\_size exhibit a strong positive correlation of 0.78, suggesting that heavier vehicles tend to have larger engines. A noticeable negative correlation with highway\_mpg suggests reduced fuel efficiency as certain vehicle attributes increase.The high correlation coefficient close to 1 between city\_mpg and highway\_mpg leads to the exclusion of city\_mpg from further analysis.
+
+
+
+\item Which features exhibit a significant number of missing values, and how should
+we address them? -- "normalized\_losses", we could not remove these records due to the total number of records in the database, so we have populated them using k--NN imputation method 
+
+
+\item How well do different classification methods (linear regression, logistic regression, decision tree, random forest, QDA, LDA, SVM) perform in predicting the symboling feature? -- Linear regression shows good performance but has a slightly lower accuracy on the testing set in case of whole dataset, indicating potential overfitting. Logistic regression performs well but exhibits a similar pattern of significantly lower accuracy on the testing set in case of whole dataset, suggesting some overfitting.  Method k--NN achieves perfect accuracy on the training set but shows significantly lower accuracy on the testing set, indicating potential sensitivity to overfitting. LDA demonstrates high accuracy on the training set but experiences a significant drop in accuracy on the testing set, suggesting overfitting. Decision tree performance is moderate, with a noticeable drop in accuracy on the testing set, indicating potential overfitting. Random forest achieves perfect accuracy on the training set but exhibits a slight decrease in accuracy on the testing set, suggesting some sensitivity to overfitting. For the entire dataset, the SVM model achieved perfect accuracy on the training set (100\%) and a high accuracy of 78.57\% on the testing set.
+After feature selection, the SVM model continued to exhibit strong performance, with a training set accuracy of 99.42\% and a testing set accuracy of 82.14\%.
+Feature selection had a marginal impact on accuracy, indicating that the SVM model maintained robust and consistent performance even when considering a subset of the most important features.
+
+
+\item What are the most important features for predicting the symboling of an automobile? --  "normalized\_losses", "wheel\_base", "height", "num\_of\_doors.two"
+
+
+
+\item Which classification algorithm yields the most accurate predictions for symboling
+based on the automobile dataset? -- Random Forest demonstrates high accuracy on the training set (1), its accuracy on the testing set is also high (0.8571429). Therefore, random forest seems to be the most robust choice for predicting the "symboling" feature in this particular project.
+
+\end{enumerate}
+
+
+
+
+Further research suggestions:
+\begin{itemize}
+\item Investigate the use of ensemble methods such as stacking or boosting to further boost the performance of classification models.
+\item Experiment with different cross--validation strategies to ensure robust model evaluation and minimize overfitting.
+\item Assess the stability of feature importance across different classification models and evaluate how robust these insights are to changes in modeling techniques.
+\end{itemize}
+
+
+
+
+
+
+	\section*{References}
+	For the project we have utilized the materials provided for the Data Mining and Machine Learning courses. 
+	
+\end{document}

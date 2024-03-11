@@ -1,0 +1,239 @@
+---
+title: "brudnopis2"
+output: html_document
+date: "2023-12-07"
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(arules)
+library(MASS)
+library(randomForest)
+library(e1071)
+```
+
+```{r}
+automobile <- read.csv("imports-85.data", sep=",")
+colnames(automobile) <- c("symboling", "normalized_losses", "make", "fuel_type",
+                          "aspiration", "num_of_doors", "body_style", "drive_wheels",
+                          "engine_location", "wheel_base", "length", "width",
+                          "height", "curb_weight", "engine_type",
+                          "num_of_cylinders", "engine_size", "fuel_system",
+                          "bore", "stroke", "compression_ratio", "horsepower",
+                          "peak_rpm", "city_mpg", "highway_mpg", "price")
+```
+
+
+```{r}
+automobile <- automobile |> 
+  naniar::replace_with_na_all(condition=~.x %in% c("?"))
+automobile
+```
+
+```{r}
+automobile |> dplyr::mutate(fuel_type=as.factor(fuel_type),
+                            make = as.factor(make),
+                            normalized_losses=as.factor(normalized_losses))
+```
+
+```{r}
+automobile <- automobile |> 
+  dplyr::mutate(symboling=as.factor(symboling),
+                normalized_losses=as.numeric(normalized_losses),
+                make=as.factor(make),
+                fuel_type=as.factor(fuel_type),
+                aspiration=as.factor(aspiration),
+                num_of_doors=as.factor(num_of_doors),
+                body_style=as.factor(body_style),
+                drive_wheels=as.factor(drive_wheels),
+                engine_location=as.factor(engine_location),
+                wheel_base=as.numeric(wheel_base),
+                length=as.numeric(length),
+                width=as.numeric(width),
+                height=as.numeric(height),
+                curb_weight=as.numeric(curb_weight),
+                engine_type=as.factor(engine_type),
+                num_of_cylinders=as.factor(num_of_cylinders),
+                engine_size=as.numeric(engine_size),
+                fuel_system=as.factor(fuel_system),
+                bore=as.numeric(bore),
+                stroke=as.numeric(stroke),
+                compression_ratio=as.numeric(compression_ratio),
+                horsepower=as.numeric(horsepower),
+                peak_rpm=as.numeric(peak_rpm),
+                city_mpg=as.numeric(city_mpg),
+                highway_mpg=as.numeric(highway_mpg),
+                price=as.numeric(price))
+```
+
+
+```{r}
+automobile <- automobile |> 
+  VIM::kNN(imp_var=FALSE)
+```
+
+```{r}
+automobile <- discretizeDF(automobile, methods = list(
+  compression_ratio = list(method = "cluster", breaks = 2, 
+                     labels = c("low", "high")) 
+),default = list(method = "none"))
+```
+
+```{r}
+	train_indices <- caret::createDataPartition(y=automobile$symboling, times=1, p=0.85, list=FALSE)
+	test <- automobile[-train_indices,]
+	automobile <- automobile[train_indices,]
+```
+
+
+
+```{r}
+dataTransform <- caret::preProcess(automobile, method=c("center", "scale"))
+dataset <- predict(dataTransform, automobile)
+```
+
+```{r}
+data <- dataset |> 
+	dplyr::select(-symboling)
+train_class <- automobile$symboling
+```
+
+
+```{r}
+caret::nearZeroVar(data, names=TRUE)
+```
+
+```{r}
+data <- data |> 
+	dplyr::select(!engine_location)
+```
+
+
+```{r}
+train_set <- data |> 
+		dplyr::select(!city_mpg)
+```
+
+
+```{r}
+dummy <- caret::dummyVars(" ~ .", data=train_set)
+train_set <- data.frame(predict(dummy, newdata = train_set)) |> 
+  dplyr::tibble()
+```
+
+
+```{r, warning=FALSE}
+C.range <- 2^((-4):4)
+
+linear.tune <- tune(svm, train.x=train_set,
+                    train.y=train_class,
+                    kernel="linear", ranges=list(cost=C.range))
+```
+
+
+```{r, warning=FALSE}
+C.range <- 2^((-4):4)
+gamma.range <- 2^((-8):4)
+kernels <- c("radial", "linear", "poly", "sigmoid")
+degree_range <- 2:5
+
+tune_params <- tune(svm, train.x=train_set |> janitor::remove_constant(),
+                    train.y=train_class,
+                    ranges=list(cost=C.range, gamma=gamma.range, kernel=kernels))
+
+C.best <- tune_params$best.parameters[["cost"]]
+gamma.best <- tune_params$best.parameters[["gamma"]]
+kernel.best <- tune_params$best.parameters[["kernel"]]
+degree.best <- tune_params$best.parameters[["degree"]]
+```
+
+```{r}
+svm_5_fold_lin <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  cv_svm <- caret::train(class~., data=dataset,
+                        method="svmLinear",
+                        trControl=train_control,
+                        tuneLength=4)
+  cv_svm
+	}
+```
+
+
+```{r, warning=FALSE}
+svm_lin <- svm_5_fold_lin(train_set, train_class)
+as_tibble(svm_lin$results[which.max(svm_lin$results$Accuracy),])
+```
+
+```{r}
+svm_5_fold_radial <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  cv_svm <- caret::train(class~., data=dataset,
+                        method="svmRadial",
+                        trControl=train_control,
+                        tuneLength=10)
+  cv_svm
+	}
+```
+
+```{r, warning=FALSE}
+svm_radial <- svm_5_fold_radial(train_set, train_class)
+as_tibble(svm_radial$results[which.max(svm_radial$results$Accuracy),])
+```
+
+```{r}
+svm_5_fold_poly <- function(dataset, class){
+  dataset <- dataset |> dplyr::mutate(class=class)
+  train_control <- caret::trainControl(method = "repeatedcv",
+                              number = 5,
+                              repeats = 1) 
+  
+  cv_svm <- caret::train(class~., data=dataset,
+                        method="svmPoly",
+                        trControl=train_control,
+                        tuneLength=10)
+  cv_svm
+	}
+```
+
+```{r, warning=FALSE}
+svm_poly <- svm_5_fold_poly(train_set, train_class)
+as_tibble(svm_poly$results[which.max(svm_poly$results$Accuracy),])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

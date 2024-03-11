@@ -1,0 +1,166 @@
+---
+title: "Automobile"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-11-03"
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(dlookr)
+library(ggplot2)
+```
+
+
+
+\section{Dataset description}
+test 
+
+Our dataset comes from \url{https://archive.ics.uci.edu/dataset/10/automobile}. The data consists of 205 instances and contains 25 features (categorical, integer, real). The automobile dataset under consideration serves as a comprehensive repository of information related to various aspects of the automotive industry. Ranging from vehicle specifications and performance metrics to market trends and historical data, this dataset encapsulates a wealth of information crucial for understanding the dynamics of the automotive sector. Analyzing this dataset can provide valuable insights into factors influencing vehicle design, consumer preferences, and industry trends, making it an invaluable resource for researchers, analysts, and enthusiasts alike.
+
+
+```{r}
+automobile <- read.csv("imports-85.data", sep=",")
+colnames(automobile) <- c("symboling", "normalized_losses", "make", "fuel_type",
+                          "aspiration", "num_of_doors", "body_style", "drive_wheels",
+                          "engile_location", "wheel_base", "length", "width",
+                          "height", "curb_weight", "engine_type",
+                          "num_of_cylinders", "engine_size", "fuel_system",
+                          "bore", "stroke", "compression_ratio", "horsepower",
+                          "peak_rpm", "city_mpg", "highway_mpg", "price")
+```
+```{r}
+# View(automobile)
+```
+
+```{r}
+automobile <- automobile |> 
+  naniar::replace_with_na_all(condition=~.x %in% c("?"))
+automobile
+```
+```{r}
+a <- table(automobile$normalized_losses, useNA="ifany")
+```
+```{r}
+ggplot() +
+  geom_bar(aes(x=automobile$normalized_losses)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+
+
+```{r}
+automobile |> apply(2, unique)
+```
+
+
+```{r}
+# automobile
+# dlookr::eda_web_report(automobile)
+```
+```{r}
+# dlookr::eda_web_report(automobile)
+```
+
+\section{Missing values in our dataframe}
+Before Exploratory Data Analysis we need to handle missing values in our dataset.
+We want to check where exactly we have missing values and then think about the approach how to fix this for our dataset. Missing values as marked as the quotation mark. They occur in columns: price, peak_rpm, horsepower, stroke, bore, num_of_doors, normalized_losses.
+
+```{r}
+question_mark_count_price <- sum(automobile$price == "?")
+question_mark_count_peak_rpm <- sum(automobile$peak_rpm == "?")
+question_mark_count_horsepower <- sum(automobile$horsepower == "?")
+question_mark_count_stroke <- sum(automobile$stroke == "?")
+question_mark_count_bore <- sum(automobile$bore == "?")
+question_mark_count_num_of_doors <- sum(automobile$num_of_doors == "?")
+question_mark_count_normalized_losses <- sum(automobile$normalized_losses == "?")
+
+print("Number of missing values in:")
+print(paste("price:", question_mark_count_price))
+print(paste("peak_rpm:", question_mark_count_peak_rpm))
+print(paste("horsepower:", question_mark_count_horsepower))
+print(paste("stroke:", question_mark_count_stroke))
+print(paste("bore:", question_mark_count_bore))
+print(paste("num_of_doors:", question_mark_count_num_of_doors))
+print(paste("normalized_losses:", question_mark_count_normalized_losses))
+```
+
+Now we are going to check individually, in which records the missing values occur, to not loose some important conclusions about our dataset later (e.g. by removing the only one Polonez if our data).
+
+\color{red}{Na razie nie wiem co tym, bo jednak dużo recordów by się usunęło przez to normalized_losses. Chyba normalized_losses trzeba dać średnią}
+
+
+\section{Descriptive analysis}
+\section{Classification}
+
+```{r}
+automobile |> 
+  select(price) |> 
+  pull() |> 
+  as.numeric() |> 
+  boxplot()
+```
+```{r}
+library(arules)
+```
+```{r}
+a <- automobile$price |> 
+  as.numeric() |> 
+  arules::discretize()
+a
+```
+```{r}
+a <- automobile$price |>
+  as.numeric() |> 
+  arules::discretize("interval", breaks=9)
+```
+```{r}
+df <- tibble(e=automobile$price |>
+  as.numeric(), f=a)
+df
+```
+```{r}
+ggplot(df) +
+  geom_point(aes(x=e, y=runif(204), color=f))
+```
+
+
+
+
+```{r}
+a <- VIM::kNN(automobile, k=5)
+```
+
+```{r}
+automobile$symboling |> as.factor() |>  typeof()
+```
+```{r}
+automobile_quantitative <- automobile |> 
+	dplyr::select(where(is.numeric))
+automobile_qualitative <- automobile |> 
+	dplyr::select(where(is.factor))
+```
+
+```{r}
+library(tidyr)
+df_long <- gather(automobile_quantitative, key = "variable", value = "value")
+
+ggplot(df_long, aes(x = value)) +
+  geom_point(aes(x=value, y=rnorm(length(value)))) +
+  facet_wrap(~variable, scales = "free") +
+  ggtitle("Distribution Plots")
+```
+
+
+
+
+
+
+
+
+
+
+
+
